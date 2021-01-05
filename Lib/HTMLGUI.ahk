@@ -12,22 +12,20 @@ Class HTMLGUI{
 		if(A_ComputerName="main-computer"&&0)
 			t("Function: " A_ThisFunc,"Label: " A_ThisLabel,"Line: " A_LineNumber,"",Node.OuterHTML,Name,Event.X,Event.Y)
 		if(Ident="Inner")
-			return ID:=Node.parentNode.ID,NN:=this.MainGUI[ID],NN.InnerText:="#" ID " Div.Container1{transform:translate(-" Node.ScrollLeft "px)}"
+			return ID:=Node.parentNode.ID,NN:=this.MainGUI[ID],NN.innerText:="#" ID " Div.Container1{transform:translate(-" Node.ScrollLeft "px)}"
 		Events.Push({Name:Name,Node:Node,this:this,Which:(Name="Mouse"?Event.Which:"")})
 		SetTimer,MasterGUIEvent,-10
 		return
 		MasterGUIEvent:
 		ComObjError(0)
 		while(Obj:=Events.Pop()){
-			Node:=Obj.Node,Name:=Obj.Name,this:=Obj.this,OID:=Node.getAttribute("OID"),LV:=Node.getAttribute("ListView"),Type:=Node.getAttribute("Type"),AutoCommit:=Node.getAttribute("AutoCommit"),ID:=(Lookup:=Node.getAttribute("Lookup"))?Lookup:Node.ID
-			VV:=Node.getAttribute("OValue")
-			Value:=Node.getAttribute("Value")
+			Node:=Obj.Node,Name:=Obj.Name,this:=Obj.this,OID:=Node.getAttribute("OID"),LV:=Node.getAttribute("ListView"),Type:=Node.getAttribute("Type"),ID:=(Lookup:=Node.getAttribute("Lookup"))?Lookup:Node.ID,Value:=Node.getAttribute("Value")
 			if(Node.getAttribute("IgnoreClick")&&Name="Click")
 				return
 			if(Node.nodeName="Select")
-				Value:=Node.QuerySelector("Option[OValue='"(Node.Value)"']").getAttribute("OID")
+				Value:=Node.QuerySelector("Option[Value='"(Node.Value)"']").getAttribute("OID")
 			else if(Node.nodeName="Span")
-				Value:=Node.InnerText
+				Value:=Node.innerText
 			else
 				Value:=Node.Value
 			if(Type~="i)\b(Checkbox)\b"||Node.nodeName~="i)\b(Input)\b")
@@ -36,12 +34,12 @@ Class HTMLGUI{
 				if(Node.ID="Icon"){
 					PN:=Node.parentNode
 					if(PN.querySelector("LI"))
-						PN.SetAttribute("Expand",(PN.getAttribute("Expand")?"":1))
+						PN.setAttribute("Expand",(PN.getAttribute("Expand")?"":1))
 					return
 				}if(Node.parentNode.querySelector("LI")&&Obj.Name="DoubleClick"){
 					Node:=Node.nodeName="LI"?Node:Node.parentNode
 					if(Node.querySelector("LI"))
-						Node.SetAttribute("Expand",Node.getAttribute("Expand")?"":1)
+						Node.setAttribute("Expand",Node.getAttribute("Expand")?"":1)
 					return
 				}Node:=Node.nodeName="Span"?Node.parentNode:Node,this.TVSetSel(Node.getAttribute("Tree"),Node.getAttribute("OID"))
 			}if(Node.nodeName="Input"&&Name="Click"&&Type!="Checkbox")
@@ -62,7 +60,6 @@ Class HTMLGUI{
 				SetTimer,% Obj.this.Timers[Timer].Name,% Obj.this.Timers[Timer].Period
 			if(Name="Click"){
 				if(LV:=this.IsLV(Node)){
-					LV:=LV.getAttribute("ListView")
 					if(!GetKeyState("Shift","P")&&!GetKeyState("Ctrl","P"))
 						this.Selected[LV]:={(OID):1}
 					else if(GetKeyState("Shift","P")){
@@ -128,25 +125,22 @@ Class HTMLGUI{
 	}AutoCommit(OnOff:=0){
 		this.ACommit:=OnOff
 	}BuildBody(Data,ListView,AutoAdd:=""){
-		New:=this.Data[ListView]:=[],this.LastSelected[ListView]:="",this.SelectedCSS[ListView].InnerText:="",Function:=this.Functions[ListView]
+		New:=this.Data[ListView]:=[],this.LastSelected[ListView]:="",this.SelectedCSS[ListView].innerText:="",Function:=this.Functions[ListView]
 		for a,b in Data{
 			BodyHTML.="<TR ListView='"(ListView)"' Row='"(A_Index)"'>",this.PadID:=StrLen(Data.Count()),ID:=New.Push(OO:=[]),OO.OID:=b.OID
 			for c,d in this.Columns[ListView]{
 				OO[d.ID]:=(d.Type="Checkbox"?(b[d.ID]?-1:0):b[d.ID]),Value:=((Val:=this.ChangedObj[ListView,b.ID,d.ID])!="")?Val:b[d.ID],Value:=d.ID="Hotkey"?this.Convert_Hotkey(Value):Value,Style:=Val!=""?"Background-Color:Red":"",Style.=Style?";Text-Align:Center":"Text-Align:Center"
 				if(d.Type="Input")
-					BodyHTML.="<TD OID='"(b.OID)"' ID='"(d.ID)"' "(Style?"Style='"(Style)"'":"")"><Input ListView='"(ListView)"' OID='"(b.OID)"' Function='"(Function)"' ID='"(d.ID)"' Value='"RegExReplace(Value,"'","&apos;")"' Type='Text' oninput='OnInput(event)'"(Val?" Style='"(d.Style)"'":"")"></Input>"this.BuildExtra(d.Extra,b.OID)"</TD>"
+					BodyHTML.="<TD OID='"(b.OID)"' ID='"(d.ID)"' "(Style?"Style='"(Style)"'":"")"><Input ListView='"(ListView)"' OID='"(b.OID)"' Function='"(Function)"' ID='"(d.ID)"' Value='"this.cleanHTML(Value)"' Type='Text' oninput='OnInput(event)'"(Val?" Style='"(d.Style)"'":"")"></Input>"this.BuildExtra(d.Extra,b.OID)"</TD>"
 				else if(d.Type="Checkbox")
 					BodyHTML.="<TD OID='"(b.OID)"' ID='"(d.ID)"' "(Style?"Style='"(Style)"'":"")"><Input ListView='"(ListView)"' OID='"(b.OID)"' Function='"(Function)"' ID='"(d.ID)"' Type='Checkbox'"(Value?"Checked":"")"></Input>"this.BuildExtra(d.Extra,b.OID)"</TD>"
 				else if(d.Type="DDL"){
-					Item:="<Select Value='"RegExReplace(b[d.ID],"'","&apos;")"' ListView='"(ListView)"' OID='"(b.OID)"' ID='"(d.ID)"' Label='" d.Label "' onchange='OnInput(Event)' Column='" Column++ "' " AddAtt ""(d.Style?" Style='"(d.Style)"'":"")">"
-					for g,h in d.Obj{
-						;~ m(h.Value,b,d.ID,b[d.ID]"=" h.Value,"",h)
-						Item.="<Option OValue='"RegExReplace(h.Value,"'","&apos;")"' OID='"(h.OID)"' " (h.OID=b[d.ID]?" selected='selected'":"")">" h.Value "</Option>"
-						;~ m("Function: " A_ThisFunc,"Line: " A_LineNumber,"",g,h,Item)
-					}
-					BodyHTML.=Foo:="<TD OID='"(b.OID)"' ID='" b.Equipment "_Condition' oninput='OnInput(Event)' Value='"RegExReplace(d.Text,"'","&apos;")"'><Div Style='Flex-Wrap:NoWrap;Display:Flex'>" Item "</Select>"this.BuildExtra(d.Extra,b.OID)"</Div></TD>"
+					Item:="<Select Value='"this.cleanHTML(b[d.ID])"' ListView='"(ListView)"' OID='"(b.OID)"' ID='"(d.ID)"' Label='" d.Label "' onchange='OnInput(Event)' Column='" Column++ "' " AddAtt ""(d.Style?" Style='"(d.Style)"'":"")">"
+					for g,h in d.Obj
+						Item.="<Option OValue='"this.cleanHTML(h.Value)"' OID='"(h.OID)"' " (h.OID=b[d.ID]?" selected='selected'":"")">" h.Value "</Option>"
+					BodyHTML.=Foo:="<TD OID='"(b.OID)"' ID='" b.Equipment "_Condition' oninput='OnInput(Event)' Value='"this.cleanHTML(d.Text)"'><Div Style='Flex-Wrap:NoWrap;Display:Flex'>" Item "</Select>"this.BuildExtra(d.Extra,b.OID)"</Div></TD>"
 				}else if(d.Type="Date")
-					BodyHTML.="<TD ID='"(d.ID)"' "(Style?"Style='"(Style)"'":"")"><Div Function='"(Function)"' ListView='"(ListView)"' OID='"(b.OID)"' ID='"(d.ID)"' Style='Flex-Wrap:NoWrap;Display:Flex;"(d.Style)"'><Input Type='Date' ListView='"(ListView)"' OID='"(b.OID)"' Function='"(Function)"' ID='"(d.ID)"' Value='"RegExReplace(Value,"'","&apos;")"' oninput='OnInput(event)'"(d.Style?" Style='"(d.Style)"'":"")"></Input>"this.BuildExtra(d.Extra,b.OID,b.OID)"</Div></TD>"
+					BodyHTML.="<TD ID='"(d.ID)"' "(Style?"Style='"(Style)"'":"")"><Div Function='"(Function)"' ListView='"(ListView)"' OID='"(b.OID)"' ID='"(d.ID)"' Style='Flex-Wrap:NoWrap;Display:Flex;"(d.Style)"'><Input Type='Date' ListView='"(ListView)"' OID='"(b.OID)"' Function='"(Function)"' ID='"(d.ID)"' Value='"this.cleanHTML(Value)"' oninput='OnInput(event)'"(d.Style?" Style='"(d.Style)"'":"")"></Input>"this.BuildExtra(d.Extra,b.OID,b.OID)"</Div></TD>"
 				else if(d.Type="Text")
 					BodyHTML.=Foo:="<TD Function='"(Function)"' ListView='"(ListView)"' OID='"(b.OID)"' ID='"(d.ID)"' "(Style?"Style='"(Style)"'":"")"><Div Function='"(Function)"' ListView='"(ListView)"' OID='"(b.OID)"' ID='"(d.ID)"' Style='Flex-Wrap:NoWrap;Display:Flex;"(d.Style)"'><Span Function='"(Function)"' ListView='"(ListView)"' OID='"(b.OID)"' ID='"(d.ID)"' Style='"(d.Style)"'>"(Value)"</Span>"this.BuildExtra(d.Extra,b.OID)"</Div></TD>"
 				else if(d.Type="Button")
@@ -158,7 +152,7 @@ Class HTMLGUI{
 			}BodyHTML.="</TR>"
 		}ComObjError(1)
 		if(AutoAdd){
-			this.Doc.QuerySelector("#"(ListView)" .Container2").GetElementsByTagName("TBody").Item[0].InnerHTML:=BodyHTML
+			this.Doc.QuerySelector("#"(ListView)" .Container2").GetElementsByTagName("TBody").Item[0].innerHTML:=BodyHTML
 			this.LabelOrder(),this.SetAllOValues()
 			;~ this.FixColumnHeaders()
 		}else
@@ -169,39 +163,33 @@ Class HTMLGUI{
 			Total.="<TR ListView='"(ListView)"'>"
 			ID:=New.Push(OO:=[])
 			for c,d in this.Columns[ListView]{
-				Info:=b[d.ID],Value:=Info.Value?Info.Value:Info.Name,Function:=Info.Function
-				OO[d.ID]:=(Info.Type="Checkbox"?(b[d.ID]?-1:0):Value)
-				OO.OID:=Info.OID
-				Style:=Info.Style
-				ID:=Info.ID?Info.ID:d.ID
-				Type:=Info.Type?Info.Type:d.Type
+				Info:=b[d.ID],Value:=Info.Value?Info.Value:Info.Name,Function:=Info.Function,OO[d.ID]:=(Info.Type="Checkbox"?(b[d.ID]?-1:0):Value),OO.OID:=Info.OID,Style:=Info.Style,ID:=Info.ID?Info.ID:d.ID,Type:=Info.Type?Info.Type:d.Type
 				if(Type="Text")
-					Total.=Foo:="<TD Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' "(Style?"Style='"(Style)"'":"")"><Div Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' Style='Flex-Wrap:NoWrap;Display:Flex;"(d.Style)"'><Span Function='"(Function)"' ListView='"(ListView)"' Lookup='"(Info.Lookup)"' OID='"(Info.OID)"' ID='"(ID)"' Value='"RegExReplace(Value,"'","&apos;")"' Style='"(d.Style)"'>"(Value)"</Span>"this.BuildExtra(d.Extra,Info.OID)"</Div></TD>"
+					Total.=Foo:="<TD Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' "(Style?"Style='"(Style)"'":"")"><Div Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' Style='Flex-Wrap:NoWrap;Display:Flex;"(d.Style)"'><Span Function='"(Function)"' ListView='"(ListView)"' Lookup='"(Info.Lookup)"' OID='"(Info.OID)"' ID='"(ID)"' Value='"this.cleanHTML(Value)"' Style='"(d.Style)"'>"(Value)"</Span>"this.BuildExtra(d.Extra,Info.OID)"</Div></TD>"
 				else if(Type="Button")
-					Total.=Foo:="<TD Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' "(Style?"Style='"(Style)"'":"")"><Div Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' Style='Flex-Wrap:NoWrap;Display:Flex;"(d.Style)"'><Button Function='"(Function)"' ListView='"(ListView)"' Lookup='"(Info.Lookup)"' OID='"(Info.OID)"' ID='"(ID)"' Value='"RegExReplace(Value,"'","&apos;")"' Style='"(d.Style)"'>"(Value)"</Span>"this.BuildExtra(d.Extra,Info.OID)"</Div></TD>"
-				else if(type="Checkbox"){
-					Total.=Foo:="<TD Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' "(Style?"Style='"(Style)"'":"")"><Div Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' Style='Flex-Wrap:NoWrap;Display:Flex;"(d.Style)"'><Input Type='Checkbox' Function='"(Function)"' ListView='"(ListView)"' Lookup='"(Info.Lookup)"' OID='"(Info.OID)"' ID='"(ID)"' Value='"RegExReplace(Value,"'","&apos;")"' Style='"(d.Style)"'>"(Value)"</Span>"this.BuildExtra(d.Extra,Info.OID)"</Div></TD>"
-				}else if(Type="Input"){
-					Total.=Foo:="<TD OID='"(Info.OID)"' ID='"(ID)"'><Input IgnoreState='"(Info.IgnoreState)"' ListView='"(ListView)"' OID='"(Info.OID)"' Function='"(Function)"' ID='"(ID)"' Value='"RegExReplace(Value,"'","&apos;")"' Type='Text' Lookup='"(Info.Lookup)"' oninput='OnInput(event)'"(Style?" Style='"(Style)"'":"")"></Input>"this.BuildExtra(d.Extra,Info.OID)"</TD>"
-				}else if(Type="Password"){
-					Total.=Foo:="<TD OID='"(Info.OID)"' ID='"(ID)"'><Input IgnoreState='"(Info.IgnoreState)"' Type='Password' ListView='"(ListView)"' OID='"(Info.OID)"' Function='"(Function)"' ID='"(ID)"' Value='"RegExReplace(Value,"'","&apos;")"' Type='Text' Lookup='"(Info.Lookup)"' oninput='OnInput(event)'"(Style?" Style='"(Style)"'":"")"></Input>"this.BuildExtra(d.Extra,Info.OID)"</TD>"
-				}else if(Type="Date")
-					Total.="<TD OID='"(Info.OID)"' ID='"(ID)"' "(Style?"Style='"(Style)"'":"")"><Span ListView='"(ListView)"' Type='Date' Lookup='"(Info.Lookup)"' Function='"(Function)"' ID='"(ID)"' OID='"(Info.OID)"' Value='"RegExReplace(Value,"'","&apos;")"' Style='Cursor:Hand;Color:#3333FF' "(d.IgnoreState?"IgnoreState='1'":"")">"(Value)"</Span></TD>"
+					Total.=Foo:="<TD Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' "(Style?"Style='"(Style)"'":"")"><Div Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' Style='Flex-Wrap:NoWrap;Display:Flex;"(d.Style)"'><Button Function='"(Function)"' ListView='"(ListView)"' Lookup='"(Info.Lookup)"' OID='"(Info.OID)"' ID='"(ID)"' Value='"this.cleanHTML(Value)"' Style='"(d.Style)"'>"(Value)"</Span>"this.BuildExtra(d.Extra,Info.OID)"</Div></TD>"
+				else if(type="Checkbox")
+					Total.=Foo:="<TD Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' "(Style?"Style='"(Style)"'":"")"><Div Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' Style='Flex-Wrap:NoWrap;Display:Flex;"(d.Style)"'><Input Type='Checkbox' Function='"(Function)"' ListView='"(ListView)"' Lookup='"(Info.Lookup)"' OID='"(Info.OID)"' ID='"(ID)"' Value='"this.cleanHTML(Value)"' Style='"(d.Style)"'>"(Value)"</Span>"this.BuildExtra(d.Extra,Info.OID)"</Div></TD>"
+				else if(Type="Input")
+					Total.=Foo:="<TD OID='"(Info.OID)"' ID='"(ID)"'><Input IgnoreState='"(Info.IgnoreState)"' ListView='"(ListView)"' OID='"(Info.OID)"' Function='"(Function)"' ID='"(ID)"' Value='"this.cleanHTML(Value)"' Type='Text' Lookup='"(Info.Lookup)"' oninput='OnInput(event)'"(Style?" Style='"(Style)"'":"")"></Input>"this.BuildExtra(d.Extra,Info.OID)"</TD>"
+				else if(Type="Password")
+					Total.=Foo:="<TD OID='"(Info.OID)"' ID='"(ID)"'><Input IgnoreState='"(Info.IgnoreState)"' Type='Password' ListView='"(ListView)"' OID='"(Info.OID)"' Function='"(Function)"' ID='"(ID)"' Value='"this.cleanHTML(Value)"' Type='Text' Lookup='"(Info.Lookup)"' oninput='OnInput(event)'"(Style?" Style='"(Style)"'":"")"></Input>"this.BuildExtra(d.Extra,Info.OID)"</TD>"
+				else if(Type="Date")
+					Total.="<TD OID='"(Info.OID)"' ID='"(ID)"' "(Style?"Style='"(Style)"'":"")"><Span ListView='"(ListView)"' Type='Date' Lookup='"(Info.Lookup)"' Function='"(Function)"' ID='"(ID)"' OID='"(Info.OID)"' Value='"this.cleanHTML(Value)"' Style='Cursor:Hand;Color:#3333FF' "(d.IgnoreState?"IgnoreState='1'":"")">"(Value)"</Span></TD>"
 				else if(Type="DDL"){
-					Item:="<Select IgnoreState='"(Info.IgnoreState)"' Value='"RegExReplace(Value,"'","&apos;")"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' Label='" d.Label "' onchange='OnInput(Event)' Lookup='"(Info.Lookup)"' Column='" Column++ "' " AddAtt ""(b[d.ID].Style?" Style='"(b[d.ID].Style)"'":"")">"
+					Item:="<Select IgnoreState='"(Info.IgnoreState)"' Value='"this.cleanHTML(Value)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' Label='" d.Label "' onchange='OnInput(Event)' Lookup='"(Info.Lookup)"' Column='" Column++ "' " AddAtt ""(b[d.ID].Style?" Style='"(b[d.ID].Style)"'":"")">"
 					for e,f in b.Value.DDL
-						Item.="<Option OID='"(f.OID)"' Value='"RegExReplace(f.Name,"'","&apos;")"' OValue='"RegExReplace(f.Name,"'","&apos;")"' "(f.Style?"Style='"(f.Style)"'":"")" "(f.Selected?" selected='selected'":"")">"(f.Name)"</Option>"
-					Total.=Foo:="<TD OID='"(b.OID)"' ID='" b.Equipment "_Condition' oninput='OnInput(Event)' Value='"RegExReplace(d.Text,"'","&apos;")"'><Div Style='Flex-Wrap:NoWrap;Display:Flex'>" Item "</Select>"this.BuildExtra(d.Extra,b.OID)"</Div></TD>"
-				}else if(IsFunc((Type)"_Column")){
+						Item.="<Option OID='"(f.OID)"' Value='"this.cleanHTML(f.Name)"' OValue='"this.cleanHTML(f.Name)"' "(f.Style?"Style='"(f.Style)"'":"")" "(f.Selected?" selected='selected'":"")">"(f.Name)"</Option>"
+					Total.=Foo:="<TD OID='"(b.OID)"' ID='" b.Equipment "_Condition' oninput='OnInput(Event)' Value='"this.cleanHTML(d.Text)"'><Div Style='Flex-Wrap:NoWrap;Display:Flex'>" Item "</Select>"this.BuildExtra(d.Extra,b.OID)"</Div></TD>"
+				}else if(IsFunc((Type)"_Column"))
 					Total.=Foo:=Func((Type)"_Column").Call(b,Info,Listview)
-				}else{
-					m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Build for type |"(Type)"|","",Info)
-				}
+				else
+					this.m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Build for type |"(Type)"|","",Info)
 				;~ m("Function: " A_ThisFunc,"Line: " A_LineNumber,"",c,d)
 			}
 			Total.="</TR>"
 		}
-		this.Doc.QuerySelector("#"(ListView)" .Container2").GetElementsByTagName("TBody").Item[0].InnerHTML:=Total
+		this.Doc.QuerySelector("#"(ListView)" .Container2").GetElementsByTagName("TBody").Item[0].innerHTML:=Total
 		this.SetAllOValues()
 		this.LabelOrder()
 	}BuildExtra(Obj,OID){
@@ -229,12 +217,12 @@ Class HTMLGUI{
 			Second:=Head:="<Table Name='"(ListView)"'><THead Class='FixedHeader'><TR Class='Header'>"
 			for a,b in this.Columns[ListView]
 				Spans.="<TH><Span Class='Header' ListView='"(ListView)"' Function='SortHDR' OText='"(b.ID)"' ID='"(b.ID)"'>"(b.Name)"</Span></TH>",Second.="<TH>"(b.Name)"</TH>"
-			Head.="</TR></thead></Table>",Second.="</TR></THead><TBody></TBody>",Header.InnerHTML:=Head,Header.QuerySelector("TR").InnerHTML:=Spans,Body.InnerHTML:=Second,ComObjError(0)
+			Head.="</TR></thead></Table>",Second.="</TR></THead><TBody></TBody>",Header.innerHTML:=Head,Header.QuerySelector("TR").innerHTML:=Spans,Body.innerHTML:=Second,ComObjError(0)
 			if(!this.SelectedCSS[ListView])
 				this.SelectedCSS[ListView]:=this.createElement("Style")
 			ComObjError(1)
 		}if(!Columns.Count())
-			Header.InnerHTML:="",Body.InnerHTML:=""
+			Header.innerHTML:="",Body.innerHTML:=""
 		if(Data)
 			this.BuildBody(Data,ListView,1)
 		if(!this.SuspendHeaderUpdate)
@@ -247,7 +235,7 @@ Class HTMLGUI{
 			for c,d in b{
 				Selected[d.OID]:=d.Sel
 				Expand[d.OID]:=d.Expand
-				Info.="<LI ID='"(d.OID)"' Value='"this.FixHTML(d.Value)"' Tree='"(Tree)"' OID='"(d.OID)"' Function='"(this.MainGUI[Tree].Function)"' Type='"(d.Type)"' Style='Cursor:Hand' Parent='"(d.Parent)"'>"
+				Info.="<LI ID='"(d.OID)"' Value='"this.cleanHTML(d.Value)"' Tree='"(Tree)"' OID='"(d.OID)"' Function='"(this.MainGUI[Tree].Function)"' Type='"(d.Type)"' Style='Cursor:Hand' Parent='"(d.Parent)"'>"
 				if(d.Type="Folder")
 					Info.="<Span ID='Icon' Class='Open' Style='Color:Yellow'>"(this.OpenFolder)"</Span><Span ID='Icon' Class='Closed' Style='Color:Yellow'>"(this.ClosedFolder)"</Span><Span ID='Label' Style='"(d.Style)"'>"(d.Value)"</Span>"
 				else
@@ -259,13 +247,13 @@ Class HTMLGUI{
 			}
 		Parent:=this.querySelector("Div[ID='"(Tree)"']")
 		Parent.Style.Visibility:="Hidden"
-		Parent.InnerHTML:=Info
+		Parent.innerHTML:=Info
 		All:=this.querySelectorAll("Div[ID='"(Tree)"'] LI")
 		while(aa:=All.Item[A_Index-1]){
 			PID:=aa.getAttribute("Parent")
 			if(Selected[aa.ID])
-				aa.SetAttribute("Sel",1)
-			aa.SetAttribute("Expand",Expand[aa.ID])
+				aa.setAttribute("Sel",1)
+			aa.setAttribute("Expand",Expand[aa.ID])
 			if(PID){
 				Parent.querySelector("UL[ID='"(PID)"']").AppendChild(aa)
 			}
@@ -275,31 +263,16 @@ Class HTMLGUI{
 			ExitApp
 		}
 		Parent.Style.Visibility:="Visible"
-		/*
-			mHTML()
-		*/
-		/*
-			m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Here!",Data,Tree)
-		*/
 	}CheckUpdated(Node){
-		/*
-			Value:=Node.Value?Node.Value:Node.getAttribute("Value")
-		*/
-		LV:=Node.getAttribute("ListView")
-		OID:=Node.getAttribute("OID")
-		ID:=(II:=Node.getAttribute("Lookup"))?II:Node.getAttribute("ID")
-		Ignore:=Node.getAttribute("IgnoreState")
-		VV:=Node.getAttribute("OValue")
-		Value:=Node.getAttribute("Value")
-		;~ m("Function: " A_ThisFunc,"Line: " A_LineNumber,"",Node,"","LV: " LV,"OID: " OID,"ID: " ID)
-		;~ if(!Ignore&&(Node.ID~="i)(EMail|First_Name|Middle_Name|Last_Name|Phone_Number|Birthday|Hire_Date|Termination_Date|Retire_Date)"=0))
-		;~ m("Function: " A_ThisFunc,"Line: " A_LineNumber,"",Node)
-		;~ m("Function: " A_ThisFunc,"Line: " A_LineNumber,"",VV,Value)
-		;~ m(Node.Value,Node.QuerySelector("Option[OValue='"(Node.Value)"']").getAttribute("OID"),"",Node)
+		LV:=Node.getAttribute("ListView"),OID:=Node.getAttribute("OID"),ID:=(II:=Node.getAttribute("Lookup"))?II:Node.getAttribute("ID"),Ignore:=Node.getAttribute("IgnoreState"),VV:=Node.getAttribute("OValue"),Value:=Node.getAttribute("Value"),Type:=Node.getAttribute("Type")
+		if(Ignore)
+			return
 		if(Node.nodeName="Select")
 			Value:=Node.QuerySelector("Option[OValue='"(Node.Value)"']").getAttribute("OID")
 		else if(Node.nodeName="Span")
-			Value:=Node.InnerText
+			Value:=Node.innerText
+		else if(Type="Checkbox")
+			Value:=Node.Checked
 		else
 			Value:=Node.Value
 		if(Type~="i)\b(Checkbox)\b"||Node.nodeName~="i)\b(Input)\b")
@@ -308,20 +281,15 @@ Class HTMLGUI{
 			return Function.Call(Name,Node),ComObjError(1)
 		if(this.ACommit||AutoCommit)
 			this.Data[LV,OID,ID]:=Value
-		if(!Ignore){
-			if(!IsObject(OO:=this.ChangedObj[LV])&&ID)
-				OO:=this.ChangedObj[LV]:=[],this.ChangedNode[LV]:=[]
-			if(VV=Value){
-				if(this.IsLV(Node))
-					this.FindParent(Node,"TD").Style.BackgroundColor:="",this.ChangedObj[LV,OID].Delete(ID),this.ChangedNode[LV,OID,ID]:=Node
-				else
-					Node.Style.BackgroundColor:="",this.ChangedObj[LV,OID].Delete(ID),this.ChangedNode[LV,OID,ID]:=Node
-			}else{
-				if(this.IsLV(Node))
-					this.FindParent(Node,"TD").Style.Background:=this.Changed,OO[OID,ID]:=Value,this.ChangedNode[LV,OID,ID]:=Node
-				else
-					Node.Style.Background:=this.Changed,OO[OID,ID]:=Value,this.ChangedNode[LV,OID,ID]:=Node
-	}}}Close(){
+		if(!IsObject(OO:=this.ChangedObj[LV])&&ID)
+			OO:=this.ChangedObj[LV]:=[],this.ChangedNode[LV]:=[]
+		if(VV=Value)
+			(this.IsLV(Node))?(this.FindParent(Node,"TD").Style.BackgroundColor:="",this.ChangedObj[LV,OID].Delete(ID),this.ChangedNode[LV,OID,ID]:=Node):((Node.nodeName="Select"?"":Node.Style.BackgroundColor:=""),this.ChangedObj[LV,OID].Delete(ID),this.ChangedNode[LV,OID,ID]:=Node)
+		else
+			(this.IsLV(Node))?((Node.nodeName="Select"?:this.FindParent(Node,"TD").Style.Background:=this.Changed),OO[OID,ID]:=Value,this.ChangedNode[LV,OID,ID]:=Node):((Node.nodeName="Select"?"":Node.Style.Background:=this.Changed),OO[OID,ID]:=Value,this.ChangedNode[LV,OID,ID]:=Node)
+	}cleanHTML(Value){
+		return RegExReplace(RegExReplace(Value,"'","&apos;"),"\&","&amp;")
+	}Close(){
 		HTMLGUI.Keep[A_Gui].Escape()
 	}Convert_Hotkey(Key){
 		StringUpper,Key,Key
@@ -333,61 +301,61 @@ Class HTMLGUI{
 	}createElement(Type,Parent:="",Atts:="",Style:="",Text:="",HTML:=""){
 		local
 		global MediaGrid
-		if(Type="ListView"){
-			New:=this.createElement("Div",Parent)
-			New.InnerHTML:=this.LVHTML(Text)
-			this.MainGUI[Text]:=this.createElement("Style")
-			this.MainGUI[Text].InnerText:="#"(Text)" Div.Container1{transform:translate(0px)}"
-			this.Functions[Text]:=Atts.Function
-		}else if(Type="TreeView"){
-			New:=this.createElement("Div",Parent),New.ID:=Text
-			this.MainGUI[Text]:=Atts
+		for a,b in Style
+			SSS.=(a)":"(b)";"
+		if(Type="ListView")
+			New:=this.createElement("Div",Parent),New.innerHTML:=this.LVHTML(Text),this.MainGUI[Text]:=this.createElement("Style"),this.MainGUI[Text].innerText:="#"(Text)" Div.Container1{transform:translate(0px)}",this.Functions[Text]:=Atts.Function
+		else if(Type="TreeView"){
+			New:=this.createElement("Div",Parent),New.ID:=Text,this.MainGUI[Text]:=Atts
 			if(!Style.Border)
 				New.Style.Border:="1px Solid Grey"
-			New.Style.OverFlow:="Auto",New.SetAttribute("Type","TreeView")
+			New.Style.OverFlow:="Auto",New.setAttribute("Type","TreeView")
 		}else if(Type="DDL"){
-			New:=this.Doc.createElement("Select")
-			(Parent?Parent.AppendChild(New):this.Doc.AppendChild(New))
+			New:=this.createElement("Select",Parent)
 			for a,b in HTML
-				New.AppendChild(Option:=this.Doc.createElement("Option")),Option.Value:=b,Option.InnerText:=b
-		}else if(Type="MediaGrid"){
-			New:=this.createElement("Div",Parent),New.ID:=Text
-			MG:=this.MediaGrid[Text]:=New MediaGrid(this,Text,(Atts.Border?Atts.Border:8),Style),New.setAttribute("Type","MediaGrid")
-		}else
-			New:=this.Doc.createElement(Type),(Parent?Parent:this.Doc.Body).AppendChild(New),(Text)?New.InnerText:=Text:HTML?New.InnerHTML:=HTML:""
+				New.AppendChild(Option:=this.Doc.createElement("Option")),Option.Value:=b.Value,Option.innerHTML:=b.Value,Option.setAttribute("OValue",b.Value),Option.setAttribute("OID",(b.OID?b.OID:A_Index)),Option.setAttribute("Style",(b.Style?b.Style:SSS)),(b.Selected)?Option.setAttribute("Selected"):""
+		}else if(Type="MediaGrid")
+			New:=this.createElement("Div",Parent),New.ID:=Text,MG:=this.MediaGrid[Text]:=New MediaGrid(this,Text,(Atts.Border?Atts.Border:8),Style),New.setAttribute("Type","MediaGrid")
+		else
+			New:=this.Doc.createElement(Type),(Parent?Parent:this.Doc.Body).AppendChild(New),(Text)?New.innerText:=Text:HTML?New.innerHTML:=HTML:""
 		for a,b in Atts
-			(a="Timer")?(this.Timers[b.ID]:={Name:b.Name,Period:b.Period},New.SetAttribute("Timer",b.ID)):New.SetAttribute(a,b)
+			(a="Timer")?(this.Timers[b.ID]:={Name:b.Name,Period:b.Period},New.setAttribute("Timer",b.ID)):New.setAttribute(a,b)
 		for a,b in Style
 			Style:=New.Style,Style[a]:=b
+		/*
+			if(SSS:=New.getAttribute("Style"))
+				m(SSS,"",New)
+		*/
+		/*
+			New.Style:=SSS
+		*/
 		if(Type="Input")
-			New.SetAttribute("oninput","OnInput(event)")
+			New.setAttribute("oninput","OnInput(event)")
 		if(Type="DDL")
-			New.SetAttribute("onchange","OnInput(event)")
+			New.setAttribute("onchange","OnInput(event)")
 		if(Atts.Type="Checkbox")
-			Parent.AppendChild(NN:=this.createElement("Label")),NN.SetAttribute("Function",Atts.Function),NN.Style.Cursor:="Hand",NN.InnerText:=Text
+			Parent.AppendChild(NN:=this.createElement("Label")),NN.setAttribute("Function",Atts.Function),NN.Style.Cursor:="Hand",NN.innerText:=Text
 		return MG?MG:New
 	}CurrentNode(){
 		return this.Doc.activeElement
 	}Del(Items:=""){
-		Remove:=[]
+		Remove:=[],Associate:=[]
 		for a,b in (Items?Items:this.DelBuild())
 			LV:=b.LV,b.Node.parentNode.RemoveChild(b.Node),OID:=b.Node.QuerySelector("*[OID]").getAttribute("OID"),Remove[OID]:=1
-		Associate:=[]
 		for a,b in this.Data[LV]
 			if(Remove[b.OID])
 				Associate[a]:=1
 		for a,b in Associate
 			this.Data[LV].Delete(a)
-		this.LabelOrder(),this.SelectedCSS[LV].InnerText:=""
+		this.LabelOrder(),this.SelectedCSS[LV].innerText:=""
 		if(Func:=Func((LV)"_Delete"))
 			Func.Call(Remove)
 	}DelBuild(){
 		Node:=this.Doc.ActiveElement,Delete:=[]
-		if(LV:=this.IsLV(Node).getAttribute("ListView")){
-			for a,b in this.Selected[LV]{
+		if(LV:=this.IsLV(Node))
+			for a,b in this.Selected[LV]
 				Delete.Push({LV:LV,OID:a,Node:this.Doc.QuerySelector("Div[ListView='"(LV)"'] TD[OID='"(a)"']").parentNode})
-			}
-		}return Delete
+		return Delete
 	}Delete(){
 		if((Active:=this.Doc.ActiveElement).nodeName="Input"){
 			if(Active.SelectionStart=Active.SelectionEnd)
@@ -426,7 +394,7 @@ Class HTMLGUI{
 					if(aa.isSameNode(Sel))
 						Start:=1
 				}
-				this.Tab()
+				this.Tab(1)
 			}else if(A_ThisHotkey="Up"){
 				All:=Sel.previousSibling.querySelectorAll("LI")
 				while(aa:=All.Item[All.Length-A_Index])
@@ -463,6 +431,8 @@ Class HTMLGUI{
 			Send,{%A_ThisHotkey%}
 		}else if(Node.nodeName="Div"&&Node.getAttribute("Type")="MediaGrid"){
 			this.MediaGrid[Node.ID].Directions(A_ThisHotkey)
+		}else if(Node.nodeName="Select"&&A_ThisHotkey~="i)\b(Up|Down)\b"){
+			Send,{%A_ThisHotkey%}
 		}else if(A_ThisHotkey~="i)\b(Right|Down)\b")
 			this.Tab()
 		else
@@ -510,8 +480,6 @@ Class HTMLGUI{
 			}
 			ComObjError(1)
 		}
-	}fixHTML(Text){
-		return RegExReplace(Text,"'","&apos;")
 	}FixIE(Version=0){
 		static Key:="Software\Microsoft\Internet Explorer\MAIN\FeatureControl\FEATURE_BROWSER_EMULATION",Versions:={7:7000,8:8888,9:9999,10:10001,11:11001}
 		Version:=Versions[Version]?Versions[Version]:Version
@@ -574,11 +542,7 @@ Class HTMLGUI{
 			this.HotkeyList[a]:=b
 		}
 	}IsLV(Node){
-		while(Node){
-			if(Node.nodeName="TR")
-				return Node
-			Node:=Node.parentNode
-		}
+		return Node.getAttribute("ListView")
 	}LabelOrder(){
 		;~ All:=this.Doc.All
 		this.TabOrder:=[],Row:=0,Column:=0,All:=this.QuerySelectorAll("Button,Input,TR,Select,Div[Type='TreeView'],Div[Type='MediaGrid']")
@@ -587,21 +551,21 @@ Class HTMLGUI{
 			if(ListView&&Row)
 				OID:=aa.QuerySelector("*[OID]").getAttribute("OID")
 			if(aa.nodeName="Button"){
-				aa.SetAttribute("Row",Row)
-				aa.SetAttribute("Col",Column)
+				aa.setAttribute("Row",Row)
+				aa.setAttribute("Col",Column)
 				this.TabOrder[Row,Column]:=aa
 				(Listview?Col++:Row++)
 			}if(aa.nodeName="TR")
-				aa.SetAttribute("Row",Row)
+				aa.setAttribute("Row",Row)
 			if(aa.nodeName="Input"||aa.nodeName="Select"){
 				if(aa.getAttribute("Name")&&aa.getAttribute("Name")=LastName){
-					aa.SetAttribute("Row",Row),aa.SetAttribute("Column",Column)
+					aa.setAttribute("Row",Row),aa.setAttribute("Column",Column)
 					Continue
 				}if(!(LP:=(ListView?this.FindParent(aa,"TR"):aa.parentNode)).IsSameNode(LastParent))
 					Row++,Column:=1
-				aa.SetAttribute("Row",Row)
+				aa.setAttribute("Row",Row)
 				this.TabOrder[Row,Column]:=aa
-				aa.SetAttribute("Col",Column++)
+				aa.setAttribute("Col",Column++)
 				LastParent:=LP
 				LastName:=aa.getAttribute("Name")
 				ID:=aa.getAttribute("OID")
@@ -609,14 +573,14 @@ Class HTMLGUI{
 					aa.Value:=Value,aa.parentNode.Style.BackgroundColor:="Red"
 			}if(aa.nodeName="Div"&&aa.getAttribute("Type")="TreeView"){
 				Row++,Column:=1
-				aa.SetAttribute("Row",Row)
+				aa.setAttribute("Row",Row)
 				this.TabOrder[Row,Column]:=aa
-				aa.SetAttribute("Col",Column),Column++
+				aa.setAttribute("Col",Column),Column++
 			}if(aa.nodeName="Div"&&aa.getAttribute("Type")="MediaGrid"){
 				Row++,Column:=1
-				aa.SetAttribute("Row",Row)
+				aa.setAttribute("Row",Row)
 				this.TabOrder[Row,Column]:=aa
-				aa.SetAttribute("Col",Column),Column++
+				aa.setAttribute("Col",Column),Column++
 			}
 		}
 	}LVDelete(ListView,Items:=""){
@@ -691,7 +655,7 @@ Class HTMLGUI{
 			Sleep,10
 		Font:="Color:"(this.HeaderColor)";Font-Size:" this.Size "px"
 		this.Doc.Body.OuterHTML:="<Body Style='Width:calc(100% - 4);Margin:0px;' ondrop='return false;'>"
-		this.Doc.Body.InnerHTML:=HTML
+		this.Doc.Body.innerHTML:=HTML
 		this.AddCSS("Body{"(Font)"}")
 		this.AddCSS(".Container1 TH{Visibility:Hidden}")
 		this.AddCSS(".Outer{Border:1px Solid Grey;OverFlow:Hidden;Display:Block}")
@@ -707,12 +671,27 @@ Class HTMLGUI{
 		this.AddCSS("LI[Expand='1']>Span[ID='Icon'].Closed{Display:None}")
 		this.AddCSS("LI[Expand='']>UL{Display:None;Visibility:Hidden}")
 		for a,b in {onclick:"Click",ondblclick:"DoubleClick",scroll:"scroll",OnInput:"OnInput",Change:"Change",Search:"Search",oncontextmenu:"Mouse"}
-			this.createElement("Script").InnerText:=a "=function(" a "){ahk_event('" b "',event)};"
+			this.createElement("Script").innerText:=a "=function(" a "){ahk_event('" b "',event)};"
 		for a,b in ["td{Border:1px Solid Grey;Padding:8px}","Body{Background-Color:"(this.Background)";Color:"(this.Color)";-MS-User-Select:None}","Table{Border-Collapse:Collapse;Border-Spacing:0;Width:100%}","Input:Focus{Background:#444;Color:#FFF;Border:2px Solid Orange}","Input{Background:"(this.Background)";Color:"(this.Color)"}",".Title{Color:"(this.TitleColor)"}"]
 			this.AddCSS(b)
 		this.createElement("Script").innerText:="clickIcon=function(clickIcon){ahk_event('clickIcon',event)};"
 		this.Columns:=[],this.Data:=[],this.LastSelected:=[],this.Styles:=[],this.StylesObj:=[],this.SelectedCSS:=[]
 		return this.Doc.ParentWindow.ahk_event:=this._Event.Bind(this)
+	}Revert(){
+		All:=this.querySelectorAll("Input[OValue],Select[OValue]")
+		while(aa:=All.Item[A_Index-1]){
+			if(!aa.getAttribute("IgnoreState")){
+				Value:=((Type:=aa.getAttribute("Type"))="Checkbox"?aa.Checked:aa.nodeName="Input"?aa.Value:aa.getAttribute("Value")),OValue:=aa.getAttribute("OValue")
+				if(Type="Checkbox")
+					aa.Checked:=(OValue?-1:0)
+				else if(aa.nodeName="Input")
+					aa.Value:=OValue
+				else if(aa.nodeName="Select"){
+					aa.querySelector("Option[OID='"this.cleanHTML(OValue)"']").setAttribute("Selected")
+				}
+				this.CheckUpdated(aa)
+			}
+		}
 	}SetSel(LV,OID){
 		static LastSel:=[]
 		if(!LV)
@@ -720,44 +699,31 @@ Class HTMLGUI{
 		for a,b in this.Selected[LV]{
 			Sel.="TR[ListView='"(LV)"'] TD[OID='"(a)"']{Background-Color:"(this.Highlight)"}`n"
 		}
-		/*
-			m(Clipboard:=Sel "`n`n" this.Doc.Body.OuterHTML)
-		*/
-		this.SelectedCSS[LV].InnerText:=Sel
-		/*
-			TR[ListView='Errors'] TD[OID='4']{Background-Color:#cccccc}
-		*/
-		/*
-			m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Here!",this.QuerySelector("*[ListView='Errors'] TD[OID='4']").parentNode.OuterHTML,Sel)
-		*/
+		this.SelectedCSS[LV].innerText:=Sel
 		this.LastSelected[LV]:=OID
-		;~ t("Function: " A_ThisFunc,"Label: " A_ThisLabel,"Line: " A_LineNumber,"",Sel)
 		LastSel[LV]:=this.Selected[LV].Clone()
 	}SetAllOValues(){
 		All:=this.Doc.QuerySelectorAll("Option")
-		while(aa:=All.Item[A_Index-1]){
-			aa.SetAttribute("OValue",aa.InnerText)
-		}
+		while(aa:=All.Item[A_Index-1])
+			aa.setAttribute("OValue",aa.innerText)
 		All:=this.Doc.QuerySelectorAll("Select,Input,Span")
 		while(aa:=All.Item[A_Index-1]){
-			Value:=aa.nodeName="Span"?aa.InnerText:aa.Value
+			Value:=aa.nodeName="Span"?aa.innerText:aa.nodeName="Input"&&aa.getAttribute("Type")="Checkbox"?aa.Checked:aa.Value
 			if(aa.nodeName="Select"){
+				All1:=aa.querySelectorAll("Option")
 				if(aa.Value)
-					Value:=aa.QuerySelector("Option[OValue='"(aa.Value)"']").getAttribute("OID")
+					Value:=aa.QuerySelector("Option[Value='"(aa.Value)"']").getAttribute("OID")
 				else
 					Value:=""
-				/*
-					m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Here!",Value,aa.OuterHTML,aa.Value,aa.QuerySelector("Option[OValue='"(aa.Value)"']").OuterHTML)
-				*/
 			}
-			aa.SetAttribute("OValue",Value)
+			aa.setAttribute("OValue",Value)
 		}
 	}SetCSS(Selector){
 		for a,b in this.Styles[Selector]
 			String.=a ":" b ";"
 		if(!Node:=this.StylesObj[Selector])
 			Node:=this.createElement("Style"),this.StylesObj[Selector]:=Node
-		Node.InnerText:=Selector "{"(String)"}"
+		Node.innerText:=Selector "{"(String)"}"
 	}SetCurrentLanguage(Language){
 		this.CurrentLanguage:=Language
 	}SetLanguageObj(Obj){
@@ -779,11 +745,10 @@ Class HTMLGUI{
 		this:=IsObject(this)?this:(HTMLGUI.Keep[A_Gui]),(W&&H)?(WW:=W,HH:=H):!W||!H?(W:=WW,H:=HH):"",DllCall("SetWindowPos",UPtr,this.Controls.Main.HWND,Int,0,"Int",0,"Int",0,"Int",W,"Int",H,"UInt",0x0020),this.FixColumnHeaders()
 		for a,b in this.MediaGrid
 			b.Size(W,H)
-	}Tab(Add:=1){
-		Node:=this.Doc.ActiveElement,Row:=Node.getAttribute("Row"),Col:=Node.getAttribute("Col"),Node:=""
-		if((!Row||!Col)&&(this.Row&&this.Col)){
+	}Tab(UpDown:=0){
+		NN:=this.Doc.ActiveElement,Row:=NN.getAttribute("Row"),Col:=NN.getAttribute("Col")
+		if((!Row||!Col)&&(this.Row&&this.Col))
 			Row:=this.Row,Col:=this.Col
-		}
 		if(Row=""&&Col=""){
 			Node:=this.QuerySelector("*[Row='"(Row:=this.TabOrder.MinIndex())"'][Col='"(this.TabOrder[Row].MinIndex())"']")
 		}else{
@@ -843,8 +808,24 @@ Class HTMLGUI{
 				if(v.Testing)
 					m(aa.getAttribute("Language"),this.CurrentScreen,this.Current)
 			*/
-			aa.InnerHTML:=this.LanguageObj[this.CurrentScreen,aa.getAttribute("Language"),this.CurrentLanguage]
+			aa.innerHTML:=this.LanguageObj[this.CurrentScreen,aa.getAttribute("Language"),this.CurrentLanguage]
 		}
+	}Values(){
+		All:=GG.querySelectorAll("Input,Select"),Values:=[]
+		while(aa:=All.Item[A_Index-1]){
+			OID:=aa.getAttribute("OID")
+			if(LV:=aa.getAttribute("ListView")){
+				if(!Obj:=Values[LV])
+					Obj:=Values[LV]:=[]
+				Obj[OID,aa.ID]:=(aa.getAttribute("Type")="Checkbox"?aa.Checked:aa.Value)
+			}else if(aa.nodeName="Select")
+				Values[aa.ID,aa.querySelector("Option[Selected]").getAttribute("OID")]:=aa.Value
+			else if(aa.nodeName="Input")
+				Values[aa.ID]:=aa.Value
+		}All:=GG.querySelectorAll("Div[Type='Treeview']")
+		while(aa:=All.Item[A_Index-1])
+			Node:=aa.querySelector("LI[Sel]"),Values[aa.ID,Node.getAttribute("OID")]:=Node.querySelector("#Label").innerText
+		return Values
 	}WinPos(HWND:=""){
 		HWND:=HWND?HWND:this.HWND,VarSetCapacity(Rect,16)
 		WinGetPos,X,Y,,,ahk_id%HWND%
@@ -947,7 +928,7 @@ Class MediaGrid{
 					X:=XX
 				}
 			}Node:=this.Doc.querySelector(Foo:="Div[ID='"(this.DivID)"'] Div[X='"(X)"'][Y='"(Y)"']")
-		}this.querySelector("Div[Current]").removeAttribute("Current"),Node.SetAttribute("Current"),Node.Focus(),this.Highlight()
+		}this.querySelector("Div[Current]").removeAttribute("Current"),Node.setAttribute("Current"),Node.Focus(),this.Highlight()
 		PN:=Node.querySelector("Video")
 		if(PN)
 			PN.Play()
@@ -1027,14 +1008,14 @@ Class MediaGrid{
 				Node.Pause()
 		}else if(a="Click"){
 			if(GetKeyState("Shift")||GetKeyState("Control")){
-				(Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.SetAttribute("Selected"))
+				(Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected"))
 			}else{
 				All:=this.Doc.querySelectorAll("Div[ID='"(this.DivID)"'] Div")
 				while(aa:=All.Item[A_Index-1]){
 					aa.removeAttribute("Selected")
 					aa.removeAttribute("Current")
 				}
-				Node.SetAttribute("Current")
+				Node.setAttribute("Current")
 			}
 			/*
 				this.Selected[OID:=Node.getAttribute("OID")]:={Node:this.Doc.querySelector("Div[ID='"(this.DivID)"'] *[OID='"(OID)"']"),SRC:Node.querySelector("Img[SRC],Video[SRC]").getAttribute("SRC")}
@@ -1069,7 +1050,7 @@ Class MediaGrid{
 		}
 	}SetSelect(a*){
 		Node:=this.querySelector("Div[Current]")
-		(Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.SetAttribute("Selected"))
+		(Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected"))
 		this.Highlight()
 	}Size(W:="",H:=""){
 		(W)?(this.W:=W,this.H:=H):(W:=this.W,H:=this.H),this.Doc.QuerySelector("#DivAfter").innerText:=".Div:After{Height:"((H/this.Y)-(this.Border*2)-2)"px}"
