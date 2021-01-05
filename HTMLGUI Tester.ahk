@@ -49,3 +49,5 @@ m(x*){
 	MsgBox,%Msg%
 }
 #Include <HTMLGUI>
+#Include <t.ahk>
+#Include <Obj2String.ahk>
