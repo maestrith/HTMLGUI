@@ -13,7 +13,7 @@ GG.createElement("Button",,{Function:"Show"},,,"Show Stuff")
 GG.createElement("Button",,{Function:"Revert"},,,"Revert")
 Div:=GG.createElement("Div")
 GG.createElement("TreeView",Div,,{Width:300,Height:"calc(100% - 30px)",Float:"Left"},"MyTree")
-GG.createElement("ListView",Div,,{Width:"calc(100% - 304px)",Height:"calc(100% - 30px)",Float:"Left"},"MyList")
+GG.createElement("ListView",Div,,{Width:"calc(100% - 304px)",Height:"calc(100% - 28px)",Float:"Left"},"MyList")
 GG.SubFolderIndent:="0px"
 GG.Show(,,602,352)
 Tree:=[[{OID:1,Value:"Neat",Parent:"",ClosedIcon:"&#x21C9;",OpenIcon:"&#x2B87;",IconStyle:"Color:Purple",Style:"Color:Pink"}]
