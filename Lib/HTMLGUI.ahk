@@ -40,8 +40,8 @@ Class HTMLGUI{
 					return
 				}if(Node.parentNode.querySelector("LI")&&Obj.Name="DoubleClick"){
 					Node:=Node.nodeName="LI"?Node:Node.parentNode
-					if(NN:=Node.querySelector("UL").parentNode)
-						NN.SetAttribute("Expand",NN.getAttribute("Expand")?"":1)
+					if(Node.querySelector("LI"))
+						Node.SetAttribute("Expand",Node.getAttribute("Expand")?"":1)
 					return
 				}Node:=Node.nodeName="Span"?Node.parentNode:Node,this.TVSetSel(Node.getAttribute("Tree"),Node.getAttribute("OID"))
 			}if(Node.nodeName="Input"&&Name="Click"&&Type!="Checkbox")
