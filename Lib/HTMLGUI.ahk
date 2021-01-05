@@ -33,22 +33,17 @@ Class HTMLGUI{
 			if(Type~="i)\b(Checkbox)\b"||Node.nodeName~="i)\b(Input)\b")
 				Value:=Type="Checkbox"?(Node.Checked?-1:0):Node.Value
 			if(Node.parentNode.getAttribute("Tree")||Node.getAttribute("Tree")){
-				/*
-					Clipboard:=Obj2String(Obj)
-				*/
 				if(Node.ID="Icon"){
 					PN:=Node.parentNode
 					if(PN.querySelector("LI"))
 						PN.SetAttribute("Expand",(PN.getAttribute("Expand")?"":1))
 					return
-				}
-				if(Node.parentNode.querySelector("LI")&&Obj.Name="DoubleClick"){
+				}if(Node.parentNode.querySelector("LI")&&Obj.Name="DoubleClick"){
 					Node:=Node.nodeName="LI"?Node:Node.parentNode
 					if(NN:=Node.querySelector("UL").parentNode)
 						NN.SetAttribute("Expand",NN.getAttribute("Expand")?"":1)
 					return
-				}Node:=Node.nodeName="Span"?Node.parentNode:Node
-				this.TVSetSel(Node.getAttribute("Tree"),Node.getAttribute("OID"))
+				}Node:=Node.nodeName="Span"?Node.parentNode:Node,this.TVSetSel(Node.getAttribute("Tree"),Node.getAttribute("OID"))
 			}if(Node.nodeName="Input"&&Name="Click"&&Type!="Checkbox")
 				return ComObjError(1)
 			if(Name="OnInput"||(Name="Click"&&Type~="i)(Checkbox|Select|Date)"))
@@ -58,7 +53,7 @@ Class HTMLGUI{
 			if(Function:=Node.getAttribute("Function")){
 				if(IsLabel(Function))
 					SetTimer,%Function%,-1
-				return Func(Function).Call(Name,Value,Node,Obj.Which) ;,t("Function: " A_ThisFunc,"Label: " A_ThisLabel,"Line: " A_LineNumber,Function)
+				return Func(Function).Call(Name,Value,Node,Obj.Which)
 			}else if(IsFunc("Actions"))
 				return Func("Actions").Call(Name,Value,Node)
 			if((Label:=Node.getAttribute("Label"))&&IsLabel(Label))
@@ -83,7 +78,6 @@ Class HTMLGUI{
 								this.Selected[LV,b.OID]:=1
 					}}if(GetKeyState("Ctrl","P"))
 						this.Selected[LV].HasKey(OID)?this.Selected[LV].Delete(OID):this.Selected[LV,OID]:=1
-					;~ m("Function: " A_ThisFunc,"Line: " A_LineNumber,"",Node)
 					this.SetSel(LV,OID)
 				}
 			}
