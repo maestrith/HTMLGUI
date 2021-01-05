@@ -44,7 +44,7 @@ Class HTMLGUI{
 				}
 				if(Node.parentNode.querySelector("LI")&&Obj.Name="DoubleClick"){
 					Node:=Node.nodeName="LI"?Node:Node.parentNode
-					if(NN:=Node.parentNode.querySelector("UL").parentNode)
+					if(NN:=Node.querySelector("UL").parentNode)
 						NN.SetAttribute("Expand",NN.getAttribute("Expand")?"":1)
 					return
 				}Node:=Node.nodeName="Span"?Node.parentNode:Node

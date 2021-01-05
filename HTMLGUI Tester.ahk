@@ -49,5 +49,3 @@ m(x*){
 	MsgBox,%Msg%
 }
 #Include <HTMLGUI>
-#Include <t>
-#Include <Obj2String>
