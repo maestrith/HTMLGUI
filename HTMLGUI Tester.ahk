@@ -20,7 +20,23 @@ Tree:=[[{OID:1,Value:"Neat",Parent:"",ClosedIcon:"&#x21C9;",OpenIcon:"&#x2B87;",
 	 ,[{OID:2,Value:"<U>S</U><Span Style='Color:Yellow'>t</Span><Span Style='Color:Purple'>u</Span>ff",Parent:1,ClosedIcon:"&#x1F63C;",OpenIcon:"&#x1F63C;",ClosedIconStyle:"Color:Orange",IconStyle:"Color:Purple",Style:"Color:Pink"}]
 	 ,[{OID:3,Value:"Folder",Type:"Folder",Parent:0,Style:"Color:Pink"}]
 	 ,[{OID:4,Value:"In Folder",Parent:3,Icon:"&#0191;",IconStyle:"Color:Orange",Style:"Color:Pink"}]]
-GG.BuildTree(Tree,"MyTree")
+TT:=[],OID:=1
+Loop,100
+{
+	II:=A_Index
+	for a,b in Tree{
+		Obj:=[]
+		for c,d in b.1{
+			Obj.1[c]:=d
+		}
+		Obj.1.OID:=(OID++)
+		TT.Push(Obj)
+	}
+}
+/*
+	m(TT)
+*/
+GG.BuildTree(TT,"MyTree")
 GG.BuildLV("MyList",[{ID:"ID",Name:"ID Name"},{ID:"Title",Name:"The Title"},{ID:"Things",Name:"More Things"}])
 GG.BuildBody2([{ID:{Type:"Text",Value:4,OID:1},Title:{Type:"Input",Style:"Width:90%;Color:Pink",Value:"Neat",IgnoreState:1,Function:"This",OID:1},Things:{Type:"Checkbox",Value:"LOL",OID:1}}
 		    ,{ID:{Type:"Text",Value:4,OID:2},Title:{Type:"Input",Value:"Fun",Function:"That",OID:2},Things:{Type:"Text",Value:"Other things",Function:"ClickMe",Style:"Cursor:Hand",OID:2}}],"MyList")

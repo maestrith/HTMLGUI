@@ -6,11 +6,11 @@ Class HTMLGUI{
 	_Event(Name,Event){
 		static Events:=[],Last:=[]
 		Node:=Event.SrcElement,Ident:=Node.getAttribute("Ident")
-		;~ t("Function: " A_ThisFunc,"Label: " A_ThisLabel,"Line: " A_LineNumber,"HERE!",Name,Node.parentNode)
+		;~ t("Function: " A_ThisFunc,"Label: " A_ThisLabel,"Line: " A_LineNumber,"HERE!",Name,SubStr(Node.outerHTML,1,500))
 		if(Node.nodeName="Option")
 			Node:=Node.parentNode
 		if(A_ComputerName="main-computer"&&0)
-			t("Function: " A_ThisFunc,"Label: " A_ThisLabel,"Line: " A_LineNumber,"",Node.OuterHTML,Name,Event.X,Event.Y)
+			t("Function: " A_ThisFunc,"Label: " A_ThisLabel,"Line: " A_LineNumber,"",Node.outerHTML,Name,Event.X,Event.Y)
 		if(Ident="Inner")
 			return ID:=Node.parentNode.ID,NN:=this.MainGUI[ID],NN.innerText:="#" ID " Div.Container1{transform:translate(-" Node.ScrollLeft "px)}"
 		Events.Push({Name:Name,Node:Node,this:this,Which:(Name="Mouse"?Event.Which:"")})
@@ -30,18 +30,18 @@ Class HTMLGUI{
 				Value:=Node.Value
 			if(Type~="i)\b(Checkbox)\b"||Node.nodeName~="i)\b(Input)\b")
 				Value:=Type="Checkbox"?(Node.Checked?-1:0):Node.Value
-			if(Node.parentNode.getAttribute("Tree")||Node.getAttribute("Tree")){
+			if(Tree:=Node.getAttribute("Tree")){
 				if(Node.ID="Icon"){
 					PN:=Node.parentNode
 					if(PN.querySelector("LI"))
 						PN.setAttribute("Expand",(PN.getAttribute("Expand")?"":1))
 					return
-				}if(Node.parentNode.querySelector("LI")&&Obj.Name="DoubleClick"){
-					Node:=Node.nodeName="LI"?Node:Node.parentNode
+				}if(Obj.Name="DoubleClick"){
+					Node:=this.querySelector("Div[Tree='"(Tree)"'] LI[OID='"(Node.getAttribute("OID"))"']")
 					if(Node.querySelector("LI"))
 						Node.setAttribute("Expand",Node.getAttribute("Expand")?"":1)
 					return
-				}Node:=Node.nodeName="Span"?Node.parentNode:Node,this.TVSetSel(Node.getAttribute("Tree"),Node.getAttribute("OID"))
+				}this.TVSetSel(Tree,Node.getAttribute("OID"))
 			}if(Node.nodeName="Input"&&Name="Click"&&Type!="Checkbox")
 				return ComObjError(1)
 			if(Name="OnInput"||(Name="Click"&&Type~="i)(Checkbox|Select|Date)"))
@@ -80,7 +80,7 @@ Class HTMLGUI{
 			}
 		}return ComObjError(1)
 	}_HTML(Node:=""){
-		this.m(Clipboard:=RegExReplace(Node?Node.OuterHtml:Master.Doc.Body.OuterHTML,"<","`n<"))
+		this.m(Clipboard:=RegExReplace(Node?Node.outerHtml:Master.Doc.Body.outerHTML,"<","`n<"))
 	}__New(Win:=1,ProgramName:="",Style:="",Options:=""){
 		static
 		SetWinDelay,-1
@@ -98,12 +98,17 @@ Class HTMLGUI{
 			if(a="GUI")
 				Gui,%b%
 		this.MainGUI:=[],this.FixIE(11)
-		Gui,Add,ActiveX,vMain HWNDMainHWND w500 h300,about:blank
+		;~ Gui,Add,ActiveX,vMain HWNDMainHWND w500 h300,about:blank
+		HTML=<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+		Gui,Add,ActiveX,vMain HWNDMainHWND w500 h300,about:%HTML%
 		this.FixIE(),this.Win:=Win
 		Gui,+LabelHTMLGUI.
+		this.WB:=Main
 		this.Doc:=Main.Document,this.HWND:=MHWND,this.ID:="ahk_id"MHWND,this.WB:=Main,this.MediaGrid:=[]
 		this.Functions:=[],this.ChangedObj:=[],this.ChangedNode:=[],this.Columns:=[],this.Data:=[],this.ProgramName:=ProgramName,this.Selected:=[],this.SelectedCSS:=[],this.Styles:=[],this.StylesObj:=[],this.Timers:=[],this.Controls:={Main:{HWND:MainHWND,ID:"ahk_id"MainHWND}}
 		HTMLGUI.Keep[Win]:=this
+		IID:="{332C4427-26CB-11D0-B483-00C04FD90119}" ;IID_IWebBrowserApp
+		this.window:=ComObj(9,ComObjQuery(Main,IID,IID),1)
 		this.OpenFolder:="&#x1f4c2;",this.ClosedFolder:="&#128193;",this.SubFolderIndent:="-25px",this.TreeViewSelectColor:="Blue",this.TreeViewUnFocusedBorderColor:="Grey"
 		;this.OpenFolder:="\1F5C1",this.ClosedFolder:="\1F5C0",this.SubFolderIndent:="-25px",this.TreeViewSelectColor:="Blue"
 		this.DirectionsObj:=this.Directions.Bind(this)
@@ -235,33 +240,48 @@ Class HTMLGUI{
 			for c,d in b{
 				Selected[d.OID]:=d.Sel
 				Expand[d.OID]:=d.Expand
-				Info.="<LI ID='"(d.OID)"' Value='"this.cleanHTML(d.Value)"' Tree='"(Tree)"' OID='"(d.OID)"' Function='"(this.MainGUI[Tree].Function)"' Type='"(d.Type)"' Style='Cursor:Hand' Parent='"(d.Parent)"'>"
+				Info.="<LI ID='"(d.OID)"' Tree='"(Tree)"' OID='"(d.OID)"' Function='"(this.MainGUI[Tree].Function)"' Type='"(d.Type)"' Style='Cursor:Hand' Parent='"(d.Parent)"'>"
 				if(d.Type="Folder")
 					Info.="<Span ID='Icon' Class='Open' Style='Color:Yellow'>"(this.OpenFolder)"</Span><Span ID='Icon' Class='Closed' Style='Color:Yellow'>"(this.ClosedFolder)"</Span><Span ID='Label' Style='"(d.Style)"'>"(d.Value)"</Span>"
 				else
 					Info.=Row:="<Span ID='Icon' Class='Open' Style='"(d.OpenIconStyle?d.OpenIconStyle:d.IconStyle)"'>"(d.OpenIcon?d.OpenIcon:d.Icon)"</Span><Span ID='Icon' Class='Closed' Style='"(d.ClosedIconStyle?d.ClosedIconStyle:d.IconStyle)"'>"(d.ClosedIcon?d.ClosedIcon:d.Icon)"</Span><Span ID='Label' Style='"(d.Style)"'>"(d.Value)"</Span>"
-				/*
-					Info.="<Span ID='Icon' Style='"(d.IconStyle)"'>"(d.Icon?d.Icon:"")"</Span><Span ID='Label' Style='"(d.Style)"'>"(d.Value)"</Span>"
-				*/
 				Info.="<UL Function='"(d.Function)"' Style='Margin:0px;Margin-Left:"(this.SubFolderIndent)"' ID='"(d.OID)"'></UL></LI>"
 			}
 		Parent:=this.querySelector("Div[ID='"(Tree)"']")
 		Parent.Style.Visibility:="Hidden"
 		Parent.innerHTML:=Info
-		All:=this.querySelectorAll("Div[ID='"(Tree)"'] LI")
-		while(aa:=All.Item[A_Index-1]){
-			PID:=aa.getAttribute("Parent")
-			if(Selected[aa.ID])
-				aa.setAttribute("Sel",1)
-			aa.setAttribute("Expand",Expand[aa.ID])
-			if(PID){
-				Parent.querySelector("UL[ID='"(PID)"']").AppendChild(aa)
+		for a,b in Expand
+			if(a)
+				Exp.=(a)":"(b?b:"''")","
+		Exp:=Trim(Exp,",")
+		Eval=
+		(
+		var exp={%Exp%}
+		var root=document.querySelector('div[id="%Tree%"]')
+		var myNodeList=document.querySelectorAll('div[Tree] li');
+		for(let i=0; i<myNodeList.length; i++){
+			let item=myNodeList[i];
+			let parent=item.getAttribute('parent');
+			let oid=item.getAttribute('oid');
+			if(parent>0)
+				root.querySelector("ul[id='"+parent+"']").appendChild(item);
+			item.setAttribute("Expand",exp[oid]?exp[oid]:'');
+		}
+		var myNodeList=root.querySelectorAll('li');
+		for(let i=0; i<myNodeList.length; i++){
+			let item=myNodeList[i];
+			let all=item.querySelectorAll('span')
+			let oid=item.getAttribute('OID')
+			var node=''
+			for(let j=0;j<all.length;j++){
+				node=all[j];
+				if(node.nodeName!='LI'&&node.nodeName!='UL'){
+					node.setAttribute("OID",oid);node.setAttribute("Tree",'%Tree%');
+				}
 			}
 		}
-		if(){
-			mHTML()
-			ExitApp
-		}
+		)
+		this.window.eval(Eval)
 		Parent.Style.Visibility:="Visible"
 	}CheckUpdated(Node){
 		LV:=Node.getAttribute("ListView"),OID:=Node.getAttribute("OID"),ID:=(II:=Node.getAttribute("Lookup"))?II:Node.getAttribute("ID"),Ignore:=Node.getAttribute("IgnoreState"),VV:=Node.getAttribute("OValue"),Value:=Node.getAttribute("Value"),Type:=Node.getAttribute("Type")
@@ -306,7 +326,7 @@ Class HTMLGUI{
 		if(Type="ListView")
 			New:=this.createElement("Div",Parent),New.innerHTML:=this.LVHTML(Text),this.MainGUI[Text]:=this.createElement("Style"),this.MainGUI[Text].innerText:="#"(Text)" Div.Container1{transform:translate(0px)}",this.Functions[Text]:=Atts.Function
 		else if(Type="TreeView"){
-			New:=this.createElement("Div",Parent),New.ID:=Text,this.MainGUI[Text]:=Atts
+			New:=this.createElement("Div",Parent),New.ID:=Text,New.setAttribute("Tree",Text),this.MainGUI[Text]:=Atts
 			if(!Style.Border)
 				New.Style.Border:="1px Solid Grey"
 			New.Style.OverFlow:="Auto",New.setAttribute("Type","TreeView")
@@ -382,39 +402,44 @@ Class HTMLGUI{
 		this.SetCSS(Selector)
 	}Destroy(){
 		Gui,% this.Win ":Destroy"
+	}CenterTV(Node){
+		Rect:=Node.getBoundingClientRect(),Parent:=this.querySelector("Div[Tree='"(Node.getAttribute("Tree"))"']"),PRect:=Parent.getBoundingClientRect(),Middle:=(PRect.Bottom-PRect.Top)/2
+		if((NewPos:=Node.offsetTop-Middle))
+			Parent.scrollTop:=NewPos
 	}Directions(){
+		;~ if(Start&&this.Doc.ParentWindow.getComputedStyle(aa).Visibility="Visible"){
 		Node:=this.CurrentNode()
 		if(Node.getAttribute("Type")="TreeView"){
 			Sel:=Node.querySelector("*[Sel='1']")
 			if(A_ThisHotkey="Down"){
 				All:=Node.querySelectorAll("LI")
 				while(aa:=All.Item[A_Index-1]){
-					if(Start&&this.Doc.ParentWindow.getComputedStyle(aa).Visibility="Visible")
-						return this.RemoveTVSel(Node),aa.setAttribute("Sel",1),this.TriggerFunction(aa)
-					if(aa.isSameNode(Sel))
+					if(Start&&aa.offsetParent){
+						return this.RemoveTVSel(Node),aa.setAttribute("Sel",1),this.TriggerFunction(aa),this.CenterTV(aa)
+					}if(aa.isSameNode(Sel))
 						Start:=1
 				}
 				this.Tab(1)
 			}else if(A_ThisHotkey="Up"){
 				All:=Sel.previousSibling.querySelectorAll("LI")
 				while(aa:=All.Item[All.Length-A_Index])
-					if(this.Doc.ParentWindow.getComputedStyle(aa).Visibility="Visible")
-						return this.RemoveTVSel(Node),aa.setAttribute("Sel",1),this.TriggerFunction(aa)
+					if(aa.offsetParent)
+						return this.RemoveTVSel(Node),aa.setAttribute("Sel",1),this.TriggerFunction(aa),this.CenterTV(aa)
 				if(Prev:=Sel.previousSibling)
-					return this.RemoveTVSel(Node),Prev.setAttribute("Sel",1),this.TriggerFunction(Prev)
+					return this.RemoveTVSel(Node),Prev.setAttribute("Sel",1),this.TriggerFunction(Prev),this.CenterTV(Prev)
 				else if((Prev:=Sel.parentNode.parentNode).nodeName="LI")
-					return this.RemoveTVSel(Node),Prev.setAttribute("Sel",1),this.TriggerFunction(Prev)
+					return this.RemoveTVSel(Node),Prev.setAttribute("Sel",1),this.TriggerFunction(Prev),this.CenterTV(Prev)
 				this.TabShift()
 			}else if(A_ThisHotkey="Left"){
 				if(Sel.getAttribute("Expand"))
-					Sel.setAttribute("Expand",""),this.TriggerFunction(Sel,"Contract")
+					Sel.setAttribute("Expand",""),this.TriggerFunction(Sel,"Contract"),this.CenterTV(Sel)
 				else if((Parent:=Sel.parentNode.parentNode).nodeName="LI")
-					this.RemoveTVSel(Node),Parent.setAttribute("Sel",1),this.TriggerFunction(Parent)
+					this.RemoveTVSel(Node),Parent.setAttribute("Sel",1),this.TriggerFunction(Parent),this.CenterTV(Parent)
 			}else if(A_ThisHotkey="Right"){
 				if(!Sel.getAttribute("Expand")&&Sel.querySelector("LI"))
-					Sel.setAttribute("Expand",1),this.TriggerFunction(Sel)
+					Sel.setAttribute("Expand",1),this.TriggerFunction(Sel),this.CenterTV(Sel)
 				else if(Sel.querySelector("LI"))
-					this.RemoveTVSel(Node),(Child:=Sel.querySelector("LI")).setAttribute("Sel",1),this.TriggerFunction(Child)
+					this.RemoveTVSel(Node),(Child:=Sel.querySelector("LI")).setAttribute("Sel",1),this.CenterTV(Child)
 			}
 		}else if(Node.nodeName="Input"&&Node.getAttribute("Type")="Text"){
 			Len:=StrPut(Node.Value,"UTF-8")-1,Start:=Node.selectionStart,End:=Node.selectionEnd
@@ -617,14 +642,14 @@ Class HTMLGUI{
 			}
 		}
 		Try{
-			if(Obj.OuterHtml){
-				String.=FullPath Obj.OuterHtml "`n",Current:=1
+			if(Obj.outerHtml){
+				String.=FullPath Obj.outerHtml "`n",Current:=1
 			}
 		}if(!Current){
 			if(IsObject(Obj)){
 				for a,b in Obj{
-					if(IsObject(b)&&b.OuterHtml)
-						String.=FullPath "." a " = " b.OuterHtml "`n"
+					if(IsObject(b)&&b.outerHtml)
+						String.=FullPath "." a " = " b.outerHtml "`n"
 					else if(IsObject(b)&&!b.XML)
 						this.Obj2String(b,FullPath "." a,BottomBlank)
 					else{
@@ -654,7 +679,7 @@ Class HTMLGUI{
 		while(this.WB.ReadyState!=4)
 			Sleep,10
 		Font:="Color:"(this.HeaderColor)";Font-Size:" this.Size "px"
-		this.Doc.Body.OuterHTML:="<Body Style='Width:calc(100% - 4);Margin:0px;' ondrop='return false;'>"
+		this.Doc.Body.outerHTML:="<Body Style='Width:calc(100% - 4);Margin:0px;' ondrop='return false;'>"
 		this.Doc.Body.innerHTML:=HTML
 		this.AddCSS("Body{"(Font)"}")
 		this.AddCSS(".Container1 TH{Visibility:Hidden}")
@@ -834,7 +859,7 @@ Class HTMLGUI{
 	}
 }
 mHTML(HTML:=""){
-	m(Clipboard:=RegExReplace((HTML?HTML:GG.Doc.Body.OuterHtml),"<","`n<"))
+	m(Clipboard:=RegExReplace((HTML?HTML:GG.Doc.Body.outerHtml),"<","`n<"))
 }
 Class MediaGrid{
 	__New(Master,DivID:="Grid",Border:=8,Options:=""){
@@ -846,7 +871,7 @@ Class MediaGrid{
 		this.DivID:=DivID
 		this.Doc:=Master.Doc
 		/*
-			mHTML(this.Doc.Body.OuterHtml)
+			mHTML(this.Doc.Body.outerHtml)
 		*/
 		Master.IG:=this
 		this.AddColor:=0x303030
@@ -986,7 +1011,7 @@ Class MediaGrid{
 		}this.Doc.QuerySelector("#Division").innerText:=".Div{Width:calc("(100/this.X)"% - "(this.Border*2)"px);Height:calc("(100/this.Y)"% - "(this.Border*2)"px)}",this.Size()
 		this.querySelector("Div[ID='"(this.DivID)"'] Div[Current]").Focus()
 		/*
-			mHTML(this.Doc.Body.OuterHTML)
+			mHTML(this.Doc.Body.outerHTML)
 		*/
 	}querySelector(Query){
 		return this.Doc.querySelector(Query)
