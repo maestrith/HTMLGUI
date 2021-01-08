@@ -18,7 +18,7 @@ GG.createElement("TreeView",Div,,{Width:300,Height:"100%",Float:"Left"},"MyTree"
 GG.createElement("ListView",Div,,{Width:"calc(100% - 304px)",Height:"calc(100% + 2px)",Float:"Left"},"MyList")
 GG.SubFolderIndent:="0px"
 MG:=GG.createElement("MediaGrid",Div,,{Width:"60%",Height:"calc(100% - 27px)"},"MG")
-GG.createElement("Span",,,{"Font-Size":25},,"Media Grid:</BR>Arrow Keys change the Selection</BR>Space Toggles Selection")
+GG.createElement("Span",,,{"Font-Size":25},,"Media Grid:</BR>Arrow Keys change the Selection</BR>Space Toggles Selection</BR>Double Click to Select</BR>Shift+Click to Toggle Selection</BR>Control+Click to Toggle Selection")
 Images:=[]
 Loop,Files,Images\*.*
 	Images.Push({SRC:A_LoopFileLongPath,OID:A_Index,Text:"Image: "(A_Index)})
