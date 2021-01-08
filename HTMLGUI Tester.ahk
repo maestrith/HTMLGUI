@@ -1,7 +1,6 @@
 ﻿#SingleInstance,Force
-global GG:=New HTMLGUI(),Different:=1
+global GG:=New HTMLGUI(1,"",{Background:"Black",Size:30}),Different:=1
 GG.Reset()
-GG.createElement("Style").innerHTML:="Body{Font-Size:50px;Background:Black}"
 GG.createElement("Input",,{Function:"Input",IgnoreState:1,ID:"My_Search"})
 GG.createElement("DDL",,{Function:"DDL",ID:"MyDDL"},{Background:"Black",Color:"Yellow"},
 			 ,[{Value:"Apple",OID:1}

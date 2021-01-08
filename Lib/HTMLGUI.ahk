@@ -89,8 +89,7 @@ Class HTMLGUI{
 		Gui,%Win%:Destroy
 		Gui,%Win%:Default
 		Gui,Margin,0,0
-		Gui,Color,0,0
-		this.BodyHTML:="<Body Style='Background-Color:Black;Color:Grey;Margin:0px'>"
+		this.BodyHTML:="<Body Style='Background:"(this.Background)";Color:"(this.Color)";Margin:0px'>"
 		Gui,% Foo:="+HWNDMHWND "(Options.Resize!=0?"+Resize":"")(Options.ToolWindow?" +ToolWindow":"")(Options.Owner?" +Owner"(Options.Owner):"")(Options.Caption=0?" -Caption":"")
 		for a,b in Options
 			if(a="GUI")
@@ -124,7 +123,7 @@ Class HTMLGUI{
 			}
 		}if(IsObject(Declarations))
 			this.Styles[Selector]:=Declarations
-		this.SetCSS(Selector)
+		return this.SetCSS(Selector)
 	}AutoCommit(OnOff:=0){
 		this.ACommit:=OnOff
 	}BuildBody(Data,ListView,AutoAdd:=""){
@@ -648,7 +647,7 @@ Class HTMLGUI{
 		this.WB.Navigate("about:blank")
 		while(this.WB.ReadyState!=4)
 			Sleep,10
-		Font:="Color:"(this.HeaderColor)";Font-Size:" this.Size "px"
+		Font:="Color:"(this.HeaderColor)";Font-Size:" this.Size "px;Background:"(this.Background)
 		this.Doc.Body.outerHTML:="<Body Style='Width:calc(100% - 4);Margin:0px;' ondrop='return false;'>"
 		this.Doc.Body.innerHTML:=HTML
 		this.AddCSS("Body{"(Font)"}")
@@ -702,6 +701,7 @@ Class HTMLGUI{
 		if(!Node:=this.StylesObj[Selector])
 			Node:=this.createElement("Style"),this.StylesObj[Selector]:=Node
 		Node.innerText:=Selector "{"(String)"}"
+		return Node
 	}SetCurrentLanguage(Language){
 		this.CurrentLanguage:=Language
 	}SetLanguageObj(Obj){
@@ -830,7 +830,8 @@ Class MediaGrid{
 		this.createElement("Style").innerText:=".Div{OverFlow:Hidden;Float:Left;Background-Color:"(HGUI.Background)";Text-Align:Center;Position:Relative;Border:6px Solid Grey;Border-Radius:6px} .Div:After{Content:'';Display:Inline-Block;Vertical-Align:Middle}"
 		this.createElement("Style","Division").innerText:=".Div{Width:calc(33.333333`% - 16px);Height:calc(33.33333`% - 16px)}"
 		this.createElement("Style","DivAfter").innerText:="Img{Margin-Top:50`%;Margin-Bottom:Auto}"
-		this.createElement("Style","Labels").innerText:="Div[Type='MediaGrid'] Span{Display:Block;Bottom:-16px;Position:Absolute;Text-Align:Center;Width:100%;Background-Color:Black;Opacity:.7}"
+		this.createElement("Style","Labels").innerText:="Div[Type='MediaGrid'] Span{Display:Block;Text-Align:Center;Width:100%;Background-Color:"(this.HGUI.Background)";Bottom:0px;Font-Size:20px;Position:Absolute;Opacity:.7}"
+		this.createElement("Style","Focus").innerText:="Div[Type='MediaGrid']:Focus Span{Background:#303030}"
 		this.SetStates()
 	}createElement(Type,ID:=""){
 		New:=this.Doc.createElement(Type),this.Doc.Body.AppendChild(New),(ID?New.ID:=ID:"")
@@ -921,9 +922,9 @@ Class MediaGrid{
 			}
 			if(Selected)
 				aa.Style.Border:=(this.Border)"px Solid "("#"SubStr(Format("{:X}",(Selected?Sel:CC)+(Current?this.AddColor:0)),1,6))
-			else if(State){
+			else if(State)
 				aa.Style.Border:=(this.Border)"px Solid "("#"(Current?SubStr(Format("{:X}",State+0x303030),1,6):Format("{:X}",State)))
-			}else
+			else
 				aa.Style.Border:=(this.Border)"px Solid "("#"SubStr(Format("{:X}",(Selected?Sel:CC)+(Current?this.AddColor:0)),1,6))
 		}
 	}Populate(Media,Current:=1){
@@ -934,7 +935,7 @@ Class MediaGrid{
 			List.="<Div "(b.Current?"Current":"")" OID='"(b.OID)"' X='"(X)"' Y='"(Y)"' IG='Select' Class='Div' Type='MediaGrid' ID='"(this.DivID)"' Style='Border-Radius:"(this.Border)"px;Border:"(this.Border)"px Solid Grey;Float:Left'>"
 			List.="<Video OID='"(b.OID)"' X='"(X)"' Y='"(Y)"' ID='"(this.DivID)"' IG='Select' Style='Display:None;vertical-align: middle;Max-Width:100%;Max-Height:100%;Background:"(this.VideoBackground)"'></Video>"
 			List.="<Img OID='"(b.OID)"' X='"(X)"' Y='"(Y)"' ID='"(this.DivID)"' IG='Select' Style='vertical-align: middle;Max-Width:100%;Max-Height:100%'></Img>"
-			List.="<Span Style='Bottom:0px;Font-Size:20px;Position:Absolute' ID='"(this.DivID)"' X='"(X)"' Y='"(Y)"'>"(b.Text)"</Span></Div>"
+			List.="<Span ID='"(this.DivID)"' X='"(X)"' Y='"(Y)"'>"(b.Text)"</Span></Div>"
 			X++
 			if(X>this.X)
 				X:=1,Y++
