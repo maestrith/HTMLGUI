@@ -13,11 +13,18 @@ GG.createElement("Button",,{Function:"Show"},,,"Show Stuff")
 GG.createElement("Button",,{Function:"Revert"},,,"Revert")
 GG.createElement("Button",,{Function:"Different"},,,"Different Tree")
 GG.createElement("Checkbox",,{ID:"Large",Function:"RefreshTree"},{"Font-Size":15,Color:"Yellow"},,"Large Tree")
-Div:=GG.createElement("Div")
-GG.createElement("TreeView",Div,,{Width:300,Height:"calc(100% - 30px)",Float:"Left"},"MyTree")
-GG.createElement("ListView",Div,,{Width:"calc(100% - 304px)",Height:"calc(100% - 28px)",Float:"Left"},"MyList")
+Div:=GG.createElement("Div",,,{Width:"100%",Height:"calc(50%)"})
+GG.createElement("TreeView",Div,,{Width:300,Height:"100%",Float:"Left"},"MyTree")
+GG.createElement("ListView",Div,,{Width:"calc(100% - 304px)",Height:"calc(100% + 2px)",Float:"Left"},"MyList")
 GG.SubFolderIndent:="0px"
-GG.Show(,,602,352)
+MG:=GG.createElement("MediaGrid",Div,,{Width:"60%",Height:"calc(100% - 27px)"},"MG")
+GG.createElement("Span",,,{"Font-Size":25},,"Media Grid:</BR>Arrow Keys change the Selection</BR>Space Toggles Selection")
+Images:=[]
+Loop,Files,Images\*.*
+	Images.Push({SRC:A_LoopFileLongPath,OID:A_Index,Text:"Image: "(A_Index)})
+MG.Populate(Images)
+MG.SelectHotkeys()
+GG.Show(,,1002,652)
 Different()
 GG.BuildLV("MyList",[{ID:"ID",Name:"ID Name"},{ID:"Title",Name:"The Title"},{ID:"Things",Name:"More Things"}])
 GG.BuildBody2([{ID:{Type:"Text",Value:4,OID:1},Title:{Type:"Input",Style:"Width:90%;Color:Pink",Value:"Neat",IgnoreState:1,Function:"This",OID:1},Things:{Type:"Checkbox",Checked:1,Value:"LOL",OID:1}}
@@ -25,6 +32,9 @@ GG.BuildBody2([{ID:{Type:"Text",Value:4,OID:1},Title:{Type:"Input",Style:"Width:
 GG.LabelOrder()
 GG.FixColumnHeaders()
 GG.Tab()
+return
+F1::
+mHTML()
 return
 1Escape(){
 	ExitApp
