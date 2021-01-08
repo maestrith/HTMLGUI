@@ -26,7 +26,7 @@ GG.LabelOrder()
 GG.FixColumnHeaders()
 GG.Tab()
 return
-1Close(){
+1Escape(){
 	ExitApp
 }
 ClickMe(){
@@ -97,7 +97,9 @@ Tree2(){
 	GG.BuildTree(TT,"MyTree")
 }
 TreeClick1(a,b,c){
-	t(a,b,c)
+	/*
+		t("Function: " A_ThisFunc,"Label: " A_ThisLabel,"Line: " A_LineNumber,"HERE!",a,b,c)
+	*/
 }
 #Include <HTMLGUI>
 #Include <t>

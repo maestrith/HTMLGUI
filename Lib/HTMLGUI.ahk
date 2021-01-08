@@ -21,7 +21,7 @@ Class HTMLGUI{
 			if(Node.getAttribute("IgnoreClick")&&Name="Click")
 				return
 			if(Node.nodeName="Select")
-				Value:=Node.QuerySelector("Option[Value='"(Node.Value)"']").getAttribute("OID")
+				Value:=Node.querySelector("Option[Value='"(Node.Value)"']").getAttribute("OID")
 			else if(Node.nodeName="Span")
 				Value:=Node.innerText
 			else
@@ -155,7 +155,7 @@ Class HTMLGUI{
 			}BodyHTML.="</TR>"
 		}ComObjError(1)
 		if(AutoAdd){
-			this.Doc.QuerySelector("#"(ListView)" .Container2").GetElementsByTagName("TBody").Item[0].innerHTML:=BodyHTML
+			this.Doc.querySelector("#"(ListView)" .Container2").GetElementsByTagName("TBody").Item[0].innerHTML:=BodyHTML
 			this.LabelOrder(),this.SetAllOValues()
 			;~ this.FixColumnHeaders()
 		}else
@@ -192,7 +192,7 @@ Class HTMLGUI{
 			}
 			Total.="</TR>"
 		}
-		this.Doc.QuerySelector("#"(ListView)" .Container2").GetElementsByTagName("TBody").Item[0].innerHTML:=Total
+		this.Doc.querySelector("#"(ListView)" .Container2").GetElementsByTagName("TBody").Item[0].innerHTML:=Total
 		this.SetAllOValues()
 		this.LabelOrder()
 	}BuildExtra(Obj,OID){
@@ -215,12 +215,12 @@ Class HTMLGUI{
 					Break
 				}
 			}
-		}Header:=this.Doc.QuerySelector("#"(ListView)" .Container1"),Body:=this.Doc.QuerySelector("#"(ListView)" .Container2")
+		}Header:=this.Doc.querySelector("#"(ListView)" .Container1"),Body:=this.Doc.querySelector("#"(ListView)" .Container2")
 		if(Build){
 			Second:=Head:="<Table Name='"(ListView)"'><THead Class='FixedHeader'><TR Class='Header'>"
 			for a,b in this.Columns[ListView]
 				Spans.="<TH><Span Class='Header' ListView='"(ListView)"' Function='SortHDR' OText='"(b.ID)"' ID='"(b.ID)"'>"(b.Name)"</Span></TH>",Second.="<TH>"(b.Name)"</TH>"
-			Head.="</TR></thead></Table>",Second.="</TR></THead><TBody></TBody>",Header.innerHTML:=Head,Header.QuerySelector("TR").innerHTML:=Spans,Body.innerHTML:=Second,ComObjError(0)
+			Head.="</TR></thead></Table>",Second.="</TR></THead><TBody></TBody>",Header.innerHTML:=Head,Header.querySelector("TR").innerHTML:=Spans,Body.innerHTML:=Second,ComObjError(0)
 			if(!this.SelectedCSS[ListView])
 				this.SelectedCSS[ListView]:=this.createElement("Style")
 			ComObjError(1)
@@ -257,7 +257,7 @@ Class HTMLGUI{
 		if(Ignore)
 			return
 		if(Node.nodeName="Select")
-			Value:=Node.QuerySelector("Option[OValue='"(Node.Value)"']").getAttribute("OID")
+			Value:=Node.querySelector("Option[OValue='"(Node.Value)"']").getAttribute("OID")
 		else if(Node.nodeName="Span")
 			Value:=Node.innerText
 		else if(Type="Checkbox")
@@ -325,7 +325,7 @@ Class HTMLGUI{
 	}Del(Items:=""){
 		Remove:=[],Associate:=[]
 		for a,b in (Items?Items:this.DelBuild())
-			LV:=b.LV,b.Node.parentNode.RemoveChild(b.Node),OID:=b.Node.QuerySelector("*[OID]").getAttribute("OID"),Remove[OID]:=1
+			LV:=b.LV,b.Node.parentNode.RemoveChild(b.Node),OID:=b.Node.querySelector("*[OID]").getAttribute("OID"),Remove[OID]:=1
 		for a,b in this.Data[LV]
 			if(Remove[b.OID])
 				Associate[a]:=1
@@ -338,7 +338,7 @@ Class HTMLGUI{
 		Node:=this.Doc.ActiveElement,Delete:=[]
 		if(LV:=this.IsLV(Node))
 			for a,b in this.Selected[LV]
-				Delete.Push({LV:LV,OID:a,Node:this.Doc.QuerySelector("Div[ListView='"(LV)"'] TD[OID='"(a)"']").parentNode})
+				Delete.Push({LV:LV,OID:a,Node:this.Doc.querySelector("Div[ListView='"(LV)"'] TD[OID='"(a)"']").parentNode})
 		return Delete
 	}Delete(){
 		if((Active:=this.Doc.ActiveElement).nodeName="Input"){
@@ -357,7 +357,7 @@ Class HTMLGUI{
 	}DeleteObj(LV){
 		Delete:=[]
 		for a,b in this.Selected[LV]
-			Delete.Push({LV:LV,OID:a,Node:this.Doc.QuerySelector("Div[ListView='"(LV)"'] TD[OID='"(a)"']").parentNode})
+			Delete.Push({LV:LV,OID:a,Node:this.Doc.querySelector("Div[ListView='"(LV)"'] TD[OID='"(a)"']").parentNode})
 		return Delete
 	}DeleteCSS(Selector,Declaration){
 		if(!this.Styles[Selector,Declaration])
@@ -367,16 +367,15 @@ Class HTMLGUI{
 	}Destroy(){
 		Gui,% this.Win ":Destroy"
 	}Directions(){
-		;~ if(Start&&this.Doc.ParentWindow.getComputedStyle(aa).Visibility="Visible"){
 		Node:=this.CurrentNode()
-		if(Node.getAttribute("Type")="TreeView"){
+		if((Type:=Node.getAttribute("Type"))="TreeView"){
 			Sel:=Node.querySelector("*[Sel='1']")
 			if(A_ThisHotkey="Down"){
 				All:=Node.querySelectorAll("LI")
 				while(aa:=All.Item[A_Index-1]){
-					if(Start&&aa.offsetParent){
+					if(Start&&aa.offsetParent)
 						return this.RemoveTVSel(Node),aa.setAttribute("Sel",1),this.TriggerFunction(aa),this.CenterTV(aa)
-					}if(aa.isSameNode(Sel))
+					if(aa.isSameNode(Sel))
 						Start:=1
 				}
 				this.Tab(1)
@@ -401,20 +400,26 @@ Class HTMLGUI{
 				else if(Sel.querySelector("LI"))
 					this.RemoveTVSel(Node),(Child:=Sel.querySelector("LI")).setAttribute("Sel",1),this.CenterTV(Child)
 			}
-		}else if(Node.nodeName="Input"&&Node.getAttribute("Type")="Text"){
-			Len:=StrPut(Node.Value,"UTF-8")-1,Start:=Node.selectionStart,End:=Node.selectionEnd
-			if(A_ThisHotkey~="i)\b(Up|Down)\b"){
-				return (A_ThisHotkey="Up"?this.TabShift():this.Tab())
-			}
-			if(Start!=End){
+		}else if(A_ThisHotkey~="i)\b(Down|Up)\b"&&(LV:=Node.getAttribute("Listview"))){
+			Row:=Node.getAttribute("Row"),Col:=Node.getAttribute("Col")
+			if(NN:=this.LVTestXY(LV,Row+(A_ThisHotkey="Up"?-1:1),Col))
+				NN.Focus(),(NN.nodeName="Input"?NN.Select():"")
+			else
+				(A_ThisHotkey="Up")?this.TabShift():this.Tab()
+		}else if(Node.nodeName="Input"&&Type="Text"){
+				Len:=StrPut(Node.Value,"UTF-8")-1,Start:=Node.selectionStart,End:=Node.selectionEnd
+				if(A_ThisHotkey~="i)\b(Up|Down)\b"){
+					return (A_ThisHotkey="Up"?this.TabShift():this.Tab())
+				}
+				if(Start!=End){
+					Send,{%A_ThisHotkey%}
+					return
+				}else if(Start=Len&&A_ThisHotkey="Right")
+					return this.Tab()
+				else if(Start=0&&A_ThisHotkey="Left")
+					return this.TabShift()
 				Send,{%A_ThisHotkey%}
-				return
-			}else if(Start=Len&&A_ThisHotkey="Right")
-				return this.Tab()
-			else if(Start=0&&A_ThisHotkey="Left")
-				return this.TabShift()
-			Send,{%A_ThisHotkey%}
-		}else if(Node.nodeName="Div"&&Node.getAttribute("Type")="MediaGrid"){
+			}else if(Node.nodeName="Div"&&Type="MediaGrid"){
 			this.MediaGrid[Node.ID].Directions(A_ThisHotkey)
 		}else if(Node.nodeName="Select"&&A_ThisHotkey~="i)\b(Up|Down)\b"){
 			Send,{%A_ThisHotkey%}
@@ -432,6 +437,11 @@ Class HTMLGUI{
 				ExitApp
 			if(Result="Yes")
 				this.m("Save the changes!")
+		}else if(Func:=Func((A_Gui)"Escape")){
+			Func.Call()
+		}else if(IsLabel(Label:=(A_Gui)"Escape")){
+			KeyWait,Escape,U
+			SetTimer,%Label%,-1
 		}else if(Func:=Func((A_Gui)"Close")){
 			Func.Call()
 		}else if(IsLabel(Label:=(A_Gui)"Close")){
@@ -492,7 +502,7 @@ Class HTMLGUI{
 	}GetLast(){
 		Settings:=[]
 		for a,b in v.Keys{
-			if(this.Doc.QuerySelector("#Box #"(a)).Checked){
+			if(this.Doc.querySelector("#Box #"(a)).Checked){
 				Settings.Push({Key:"LastType",Value:a})
 				Break
 			}
@@ -538,7 +548,7 @@ Class HTMLGUI{
 		while(aa:=All.Item[A_Index-1]){
 			ListView:=aa.getAttribute("ListView")
 			if(ListView&&Row)
-				OID:=aa.QuerySelector("*[OID]").getAttribute("OID")
+				OID:=aa.querySelector("*[OID]").getAttribute("OID")
 			if(aa.nodeName="Button"){
 				aa.setAttribute("Row",Row)
 				aa.setAttribute("Col",Column)
@@ -574,7 +584,7 @@ Class HTMLGUI{
 		}
 	}LVDelete(ListView,Items:=""){
 		if(!Items)
-			return Node:=this.Doc.QuerySelector("Div[ListView='"(ListView)"'] TBody"),Parent:=Node.parentNode,Parent.RemoveChild(Node),this.createElement("TBody",Parent)
+			return Node:=this.Doc.querySelector("Div[ListView='"(ListView)"'] TBody"),Parent:=Node.parentNode,Parent.RemoveChild(Node),this.createElement("TBody",Parent)
 	}LVHTML(ListView,Width:="calc(100% - 2px)",Height:="calc(100% - 2px)",Function:=""){
 		Total.="<Div Class='Outer' ID='" ListView "' ListView='"(ListView)"' Style='Width:"(Width)";Height:"(Height)"'><Div ID='Container1' Class='Container1'></Div><Div Class='Inner' onscroll='scroll(event)' ID='Inner' Ident='Inner' Style='Width:100%'><Div ID='Container2' Class='Container2' Style='Margin-Left:2px;Margin-Right:2px;Margin-Top:0px' onscroll='scroll(event)'></Div></Div></Div>"
 		return Total
@@ -631,7 +641,7 @@ Class HTMLGUI{
 	}OddCSS(Color,ListView:="",Extra:=""){
 		this.AddCSS((ListView?"Div[ListView='"(ListView)"'] ":"")"TBody tr:nth-child(even){Background-Color:"(Color)";"(Extra)"}")
 	}querySelector(Query){
-		return this.Doc.QuerySelector(Query)
+		return this.Doc.querySelector(Query)
 	}querySelectorAll(Query){
 		return this.Doc.QuerySelectorAll(Query)
 	}RemoveTVSel(Node){
@@ -721,9 +731,9 @@ Class HTMLGUI{
 		NN:=this.Doc.ActiveElement,Row:=NN.getAttribute("Row"),Col:=NN.getAttribute("Col")
 		if((!Row||!Col)&&(this.Row&&this.Col))
 			Row:=this.Row,Col:=this.Col
-		if(Row=""&&Col=""){
-			Node:=this.QuerySelector("*[Row='"(Row:=this.TabOrder.MinIndex())"'][Col='"(this.TabOrder[Row].MinIndex())"']")
-		}else{
+		if(Row=""&&Col="")
+			Node:=this.querySelector("*[Row='"(Row:=this.TabOrder.MinIndex())"'][Col='"(this.TabOrder[Row].MinIndex())"']")
+		else{
 			for a,b in this.TabOrder[Row]
 				if(a>Col){
 					Node:=b
@@ -738,21 +748,23 @@ Class HTMLGUI{
 				}
 			}
 			if(!Node)
-				Node:=this.QuerySelector("*[Row='"(Row:=this.TabOrder.MinIndex())"'][Col='"(this.TabOrder[Row].MinIndex())"']")
+				Node:=this.querySelector("*[Row='"(Row:=this.TabOrder.MinIndex())"'][Col='"(this.TabOrder[Row].MinIndex())"']")
 			this.Row:=Node.getAttribute("Row"),this.Col:=Node.getAttribute("Col")
 		}Node.Focus(),(Node.nodeName="Input"?Node.Select():""),this.FocusTree(Node)
 	}TabShift(){
 		Node:=this.Doc.ActiveElement,Row:=Node.getAttribute("Row"),Col:=Node.getAttribute("Col")
 		if(Row=""&&Col=""){
-			Node:=this.QuerySelector("*[Row='"(this.TabOrder.MaxIndex())"'][Col='"(this.TabOrder[this.TabOrder.MaxIndex()].MaxIndex())"']")
+			Node:=this.querySelector("*[Row='"(this.TabOrder.MaxIndex())"'][Col='"(this.TabOrder[this.TabOrder.MaxIndex()].MaxIndex())"']")
 		}else{
-			if(!Node:=this.QuerySelector("*[Row='"(Row)"'][Col='"(Col-1)"']")){
+			if(!Node:=this.querySelector("*[Row='"(Row)"'][Col='"(Col-1)"']")){
 				while(!this.TabOrder[--Row]&&Row>=0)
 					Col:=this.TabOrder[Row].MaxIndex()
-				Node:=this.QuerySelector("*[Row='"(Row)"'][Col='"this.TabOrder[Row].MaxIndex()"']")
+				Node:=this.querySelector("*[Row='"(Row)"'][Col='"this.TabOrder[Row].MaxIndex()"']")
 			}if(!Node)
-				Node:=this.QuerySelector("*[Row='"(this.TabOrder.MaxIndex())"'][Col='"(this.TabOrder[this.TabOrder.MaxIndex()].MaxIndex())"']")
+				Node:=this.querySelector("*[Row='"(this.TabOrder.MaxIndex())"'][Col='"(this.TabOrder[this.TabOrder.MaxIndex()].MaxIndex())"']")
 		}Node.Focus(),(Node.nodeName="Input"?Node.Select():""),this.FocusTree(Node)
+	}LVTestXY(ListView,Row,Col){
+		return this.querySelector(Foo:="Div[ListView='"(ListView)"'] *[Row='"(Row)"'][Col='"(Col)"']")
 	}TriggerFunction(Node,Action:=""){
 		static Functions:=[]
 		if(Function:=Node.getAttribute("Function")){
@@ -871,7 +883,7 @@ Class MediaGrid{
 				FF.Call(Key)
 			return t("Function: " A_ThisFunc,"Label: " A_ThisLabel,"Line: " A_LineNumber,"HERE!",Node)
 		}
-		if(NN:=Doc.QuerySelector("Div[ID='"(this.DivID)"'] Div[Selected]"))
+		if(NN:=Doc.querySelector("Div[ID='"(this.DivID)"'] Div[Selected]"))
 			NN.removeAttribute("Current")
 		if(a.1&&a.2){
 			(this.TestXY(a.1,a.2))?(X:=a.1,Y:=a.2):(X:=Y:=1),Node:=this.Doc.querySelector(Foo:="Div[ID='"(this.DivID)"'] Div[X='"(X)"'][Y='"(Y)"']")
@@ -911,7 +923,7 @@ Class MediaGrid{
 				Selected.Push(aa.getAttribute("OID"))
 		}
 		if(Selected.Count()=0&&!Selected){
-			if(OID:=this.Doc.QuerySelector(Foo:="Div[ID='"(this.DivID)"'] Div[Current]").getAttribute("OID"))
+			if(OID:=this.Doc.querySelector(Foo:="Div[ID='"(this.DivID)"'] Div[Current]").getAttribute("OID"))
 				Selected.Push(OID)
 		}
 		return Selected
@@ -955,7 +967,7 @@ Class MediaGrid{
 				(Vid:=Node.querySelector("Video")).SRC:=b.SRC,Vid.Style.Display:="Inline-Block",Node.querySelector("Img").Style.Display:="None",Node.Style.Background:=this.VideoBackground,Node.querySelector("Video").Volume:=this.Volume
 			else
 				(Img:=Node.querySelector("Img")).SRC:=b.SRC,Img.Style.Display:="Inline-Block",Node.querySelector("Video").Style.Display:="None",Node.Style.Background:=this.Master.Background
-		}this.Doc.QuerySelector("#Division").innerText:=".Div{Width:calc("(100/this.X)"% - "(this.Border*2)"px);Height:calc("(100/this.Y)"% - "(this.Border*2)"px)}",this.Size()
+		}this.Doc.querySelector("#Division").innerText:=".Div{Width:calc("(100/this.X)"% - "(this.Border*2)"px);Height:calc("(100/this.Y)"% - "(this.Border*2)"px)}",this.Size()
 		this.querySelector("Div[ID='"(this.DivID)"'] Div[Current]").Focus()
 		/*
 			mHTML(this.Doc.Body.outerHTML)
@@ -1025,7 +1037,7 @@ Class MediaGrid{
 		(Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected"))
 		this.Highlight()
 	}Size(W:="",H:=""){
-		(W)?(this.W:=W,this.H:=H):(W:=this.W,H:=this.H),this.Doc.QuerySelector("#DivAfter").innerText:=".Div:After{Height:"((H/this.Y)-(this.Border*2)-2)"px}"
+		(W)?(this.W:=W,this.H:=H):(W:=this.W,H:=this.H),this.Doc.querySelector("#DivAfter").innerText:=".Div:After{Height:"((H/this.Y)-(this.Border*2)-2)"px}"
 	}TestXY(X,Y){
 		return this.querySelector(Foo:="Div[ID='"(this.DivID)"'] Div[X='"(X)"'][Y='"(Y)"']")
 	}
