@@ -1,12 +1,23 @@
 HTMLGUI(Win:=1,ProgramName:="",Style:="",Options:=""){
 	return New HTMLGUI(Win,ProgramName,Style,Options)
 }
+GUIDropFiles(a*){
+	GuiDropFiles:
+	CoordMode, Mouse, Client
+	MouseGetPos, x, y
+	element := wb.document.elementFromPoint(x, y)
+	MsgBox, % element.outerHTML "`n" x " : " xX "`n" y " : " YY
+	return
+	MsgBox, Received file drop event
+}
 Class HTMLGUI{
 	static Keep:=[]
 	_Event(Name,Event){
 		static Events:=[],Last:=[]
 		Node:=Event.SrcElement,Ident:=Node.getAttribute("Ident")
 		;~ t("Function: " A_ThisFunc,"Label: " A_ThisLabel,"Line: " A_LineNumber,"HERE!",Name,SubStr(Node.outerHTML,1,500))
+		if(Node.getAttribute("Checkbox"))
+			return Node.previousSibling.Click()
 		if(Node.nodeName="Option")
 			Node:=Node.parentNode
 		if(Ident="Inner")
@@ -96,14 +107,25 @@ Class HTMLGUI{
 				Gui,%b%
 		this.MainGUI:=[],this.FixIE(11)
 		Gui,Add,ActiveX,vMain HWNDMainHWND w500 h300,about:blank
-		;~ HTML=<meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-		;~ Gui,Add,ActiveX,vMain HWNDMainHWND w500 h300,about:%HTML%
-		this.FixIE(),this.Win:=Win
-		Gui,+LabelHTMLGUI.
+		Gui,+LabelHTMLGUI. +HWNDhMain
+		Detect:=A_DetectHiddenWindows
+		DetectHiddenWindows,On
+		Sleep,100
+		ControlGet,hIE,hWnd,,Internet Explorer_Server1,% "ahk_id" hMain
+		DetectHiddenWindows,%Detect%
+		Main.RegisterAsDropTarget:=false
+		DllCall("ole32\RevokeDragDrop","UPtr",hIE)
+		Loop, Parse, Cursors, `,
+		{
+			DllCall( "SetSystemCursor", Uint,CursorHandle, Int,A_Loopfield )
+		} 
+		this.FixIE(),this.Win:=Win,this.FunctionObj:=[]
 		this.WB:=Main
 		this.Doc:=Main.Document,this.HWND:=MHWND,this.ID:="ahk_id"MHWND,this.WB:=Main,this.MediaGrid:=[]
 		this.Functions:=[],this.ChangedObj:=[],this.ChangedNode:=[],this.Columns:=[],this.Data:=[],this.ProgramName:=ProgramName,this.Selected:=[],this.SelectedCSS:=[],this.Styles:=[],this.StylesObj:=[],this.Timers:=[],this.Controls:={Main:{HWND:MainHWND,ID:"ahk_id"MainHWND}}
 		HTMLGUI.Keep[Win]:=this
+		this.IEHWND:=MainHWND
+		HTMLGUI.Keep[hMain]:=this
 		IID:="{332C4427-26CB-11D0-B483-00C04FD90119}" ;IID_IWebBrowserApp
 		this.window:=ComObj(9,ComObjQuery(Main,IID,IID),1)
 		this.OpenFolder:="&#x1f4c2;",this.ClosedFolder:="&#128193;",this.SubFolderIndent:="-25px",this.TreeViewSelectColor:="Blue",this.TreeViewUnFocusedBorderColor:="Grey"
@@ -167,19 +189,19 @@ Class HTMLGUI{
 			for c,d in this.Columns[ListView]{
 				Info:=b[d.ID],Value:=Info.Value?Info.Value:Info.Name,Function:=Info.Function,OO[d.ID]:=(Info.Type="Checkbox"?(b[d.ID]?-1:0):Value),OO.OID:=Info.OID,Style:=Info.Style,ID:=Info.ID?Info.ID:d.ID,Type:=Info.Type?Info.Type:d.Type
 				if(Type="Text")
-					Total.=Foo:="<TD Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' "(Style?"Style='"(Style)"'":"")"><Div Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' Style='Flex-Wrap:NoWrap;Display:Flex;"(d.Style)"'><Span Function='"(Function)"' ListView='"(ListView)"' Lookup='"(Info.Lookup)"' OID='"(Info.OID)"' ID='"(ID)"' Value='"this.cleanHTML(Value)"' Style='"(d.Style)"'>"(Value)"</Span>"this.BuildExtra(d.Extra,Info.OID)"</Div></TD>"
+					Total.=Foo:="<TD Drop='"(Info.Drop)"' Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' "(Style?"Style='"(Style)"'":"")"><Div Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' Style='Flex-Wrap:NoWrap;Display:Flex;"(d.Style)"'><Span Drop='"(Info.Drop)"' Function='"(Function)"' ListView='"(ListView)"' Lookup='"(Info.Lookup)"' OID='"(Info.OID)"' ID='"(ID)"' Value='"this.cleanHTML(Value)"' Style='"(d.Style)"'>"(Value)"</Span>"this.BuildExtra(d.Extra,Info.OID)"</Div></TD>"
 				else if(Type="Button")
-					Total.=Foo:="<TD Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' "(Style?"Style='"(Style)"'":"")"><Div Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' Style='Flex-Wrap:NoWrap;Display:Flex;"(d.Style)"'><Button Function='"(Function)"' ListView='"(ListView)"' Lookup='"(Info.Lookup)"' OID='"(Info.OID)"' ID='"(ID)"' Value='"this.cleanHTML(Value)"' Style='"(d.Style)"'>"(Value)"</Span>"this.BuildExtra(d.Extra,Info.OID)"</Div></TD>"
+					Total.=Foo:="<TD Drop='"(Info.Drop)"' Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' "(Style?"Style='"(Style)"'":"")"><Div Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' Style='Flex-Wrap:NoWrap;Display:Flex;"(d.Style)"'><Button Drop='"(Info.Drop)"' Function='"(Function)"' ListView='"(ListView)"' Lookup='"(Info.Lookup)"' OID='"(Info.OID)"' ID='"(ID)"' Value='"this.cleanHTML(Value)"' Style='"(d.Style)"'>"(Value)"</Span>"this.BuildExtra(d.Extra,Info.OID)"</Div></TD>"
 				else if(type="Checkbox")
-					Total.=Foo:="<TD Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' "(Style?"Style='"(Style)"'":"")"><Div Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' Style='Flex-Wrap:NoWrap;Display:Flex;"(d.Style)"'><Input Type='Checkbox' Function='"(Function)"' ListView='"(ListView)"' Lookup='"(Info.Lookup)"' OID='"(Info.OID)"' ID='"(ID)"' Value='"this.cleanHTML(Value)"' "(Info.Checked?" Checked ":"")" Style='"(d.Style)"'>"(Value)"</Span>"this.BuildExtra(d.Extra,Info.OID)"</Div></TD>"
+					Total.=Foo:="<TD Drop='"(Info.Drop)"' Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' "(Style?"Style='"(Style)"'":"")"><Div Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' Style='Flex-Wrap:NoWrap;Display:Flex;"(d.Style)"'><Input Drop='"(Info.Drop)"' Type='Checkbox' Function='"(Function)"' ListView='"(ListView)"' Lookup='"(Info.Lookup)"' OID='"(Info.OID)"' ID='"(ID)"' Value='"this.cleanHTML(Value)"' "(Info.Checked?" Checked ":"")" Style='"(d.Style)"'>"(Value)"</Span>"this.BuildExtra(d.Extra,Info.OID)"</Div></TD>"
 				else if(Type="Input")
-					Total.=Foo:="<TD OID='"(Info.OID)"' ID='"(ID)"'><Input IgnoreState='"(Info.IgnoreState)"' ListView='"(ListView)"' OID='"(Info.OID)"' Function='"(Function)"' ID='"(ID)"' Value='"this.cleanHTML(Value)"' Type='Text' Lookup='"(Info.Lookup)"' oninput='OnInput(event)'"(Style?" Style='"(Style)"'":"")"></Input>"this.BuildExtra(d.Extra,Info.OID)"</TD>"
+					Total.=Foo:="<TD Drop='"(Info.Drop)"' OID='"(Info.OID)"' ID='"(ID)"'><Input Drop='"(Info.Drop)"' IgnoreState='"(Info.IgnoreState)"' ListView='"(ListView)"' OID='"(Info.OID)"' Function='"(Function)"' ID='"(ID)"' Value='"this.cleanHTML(Value)"' Type='Text' Lookup='"(Info.Lookup)"' oninput='OnInput(event)'"(Style?" Style='"(Style)"'":"")"></Input>"this.BuildExtra(d.Extra,Info.OID)"</TD>"
 				else if(Type="Password")
-					Total.=Foo:="<TD OID='"(Info.OID)"' ID='"(ID)"'><Input IgnoreState='"(Info.IgnoreState)"' Type='Password' ListView='"(ListView)"' OID='"(Info.OID)"' Function='"(Function)"' ID='"(ID)"' Value='"this.cleanHTML(Value)"' Type='Text' Lookup='"(Info.Lookup)"' oninput='OnInput(event)'"(Style?" Style='"(Style)"'":"")"></Input>"this.BuildExtra(d.Extra,Info.OID)"</TD>"
+					Total.=Foo:="<TD Drop='"(Info.Drop)"' OID='"(Info.OID)"' ID='"(ID)"'><Input Drop='"(Info.Drop)"' IgnoreState='"(Info.IgnoreState)"' Type='Password' ListView='"(ListView)"' OID='"(Info.OID)"' Function='"(Function)"' ID='"(ID)"' Value='"this.cleanHTML(Value)"' Type='Text' Lookup='"(Info.Lookup)"' oninput='OnInput(event)'"(Style?" Style='"(Style)"'":"")"></Input>"this.BuildExtra(d.Extra,Info.OID)"</TD>"
 				else if(Type="Date")
-					Total.="<TD OID='"(Info.OID)"' ID='"(ID)"' "(Style?"Style='"(Style)"'":"")"><Span ListView='"(ListView)"' Type='Date' Lookup='"(Info.Lookup)"' Function='"(Function)"' ID='"(ID)"' OID='"(Info.OID)"' Value='"this.cleanHTML(Value)"' Style='Cursor:Hand;Color:#3333FF' "(d.IgnoreState?"IgnoreState='1'":"")">"(Value)"</Span></TD>"
+					Total.="<TD Drop='"(Info.Drop)"' OID='"(Info.OID)"' ID='"(ID)"' "(Style?"Style='"(Style)"'":"")"><Span ListView='"(ListView)"' Type='Date' Lookup='"(Info.Lookup)"' Function='"(Function)"' ID='"(ID)"' OID='"(Info.OID)"' Value='"this.cleanHTML(Value)"' Style='Cursor:Hand;Color:#3333FF' "(d.IgnoreState?"IgnoreState='1'":"")">"(Value)"</Span></TD>"
 				else if(Type="DDL"){
-					Item:="<Select IgnoreState='"(Info.IgnoreState)"' Value='"this.cleanHTML(Value)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' Label='" d.Label "' onchange='OnInput(Event)' Lookup='"(Info.Lookup)"' Column='" Column++ "' " AddAtt ""(b[d.ID].Style?" Style='"(b[d.ID].Style)"'":"")">"
+					Item:="<Select Drop='"(Info.Drop)"' IgnoreState='"(Info.IgnoreState)"' Value='"this.cleanHTML(Value)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' Label='" d.Label "' onchange='OnInput(Event)' Lookup='"(Info.Lookup)"' Column='" Column++ "' " AddAtt ""(b[d.ID].Style?" Style='"(b[d.ID].Style)"'":"")">"
 					for e,f in b.Value.DDL
 						Item.="<Option OID='"(f.OID)"' Value='"this.cleanHTML(f.Name)"' OValue='"this.cleanHTML(f.Name)"' "(f.Style?"Style='"(f.Style)"'":"")" "(f.Selected?" selected='selected'":"")">"(f.Name)"</Option>"
 					Total.=Foo:="<TD OID='"(b.OID)"' ID='" b.Equipment "_Condition' oninput='OnInput(Event)' Value='"this.cleanHTML(d.Text)"'><Div Style='Flex-Wrap:NoWrap;Display:Flex'>" Item "</Select>"this.BuildExtra(d.Extra,b.OID)"</Div></TD>"
@@ -286,17 +308,19 @@ Class HTMLGUI{
 				if(InStr(Key,d))
 					Build.=c "+",Key:=RegExReplace(Key,"\" d)
 		return Build Key
-	}createElement(Type,Parent:="",Atts:="",Style:="",Text:="",HTML:=""){
+	}createElement(Type,Parent:="",Attributes:="",Style:="",Text:="",HTML:=""){
 		local
 		global MediaGrid
 		for a,b in Style
 			SSS.=(a)":"(b)";"
-		if(Type="ListView")
-			New:=this.createElement("Div",Parent),New.innerHTML:=this.LVHTML(Text),this.MainGUI[Text]:=this.createElement("Style"),this.MainGUI[Text].innerText:="#"(Text)" Div.Container1{transform:translate(0px)}",this.Functions[Text]:=Atts.Function
-		else if(Type="Checkbox")
-			New:=this.createElement("Input",Parent,{ID:Atts.ID,Type:"Checkbox"})
+		if(Type="ListView"){
+			New:=this.createElement("Div",Parent),New.innerHTML:=this.LVHTML(Text),this.MainGUI[Text]:=this.createElement("Style"),this.MainGUI[Text].innerText:="#"(Text)" Div.Container1{transform:translate(0px)}",this.Functions[Text]:=Attributes.Function,New.ID:=Text
+			for a,b in Attributes
+				New.setAttribute(a,b)
+		}else if(Type="Checkbox")
+			New:=this.createElement("Input",Parent,{ID:Attributes.ID,Type:"Checkbox"})
 		else if(Type="TreeView"){
-			New:=this.createElement("Div",Parent),New.ID:=Text,New.setAttribute("Tree",Text),this.MainGUI[Text]:=Atts
+			New:=this.createElement("Div",Parent),New.ID:=Text,New.setAttribute("Tree",Text),this.MainGUI[Text]:=Attributes
 			if(!Style.Border)
 				New.Style.Border:="1px Solid Grey"
 			New.Style.OverFlow:="Auto",New.setAttribute("Type","TreeView")
@@ -305,10 +329,10 @@ Class HTMLGUI{
 			for a,b in HTML
 				New.AppendChild(Option:=this.Doc.createElement("Option")),Option.Value:=b.Value,Option.innerHTML:=b.Value,Option.setAttribute("OValue",b.Value),Option.setAttribute("OID",(b.OID?b.OID:A_Index)),Option.setAttribute("Style",(b.Style?b.Style:SSS)),(b.Selected)?Option.setAttribute("Selected"):""
 		}else if(Type="MediaGrid")
-			New:=this.createElement("Div",Parent),New.ID:=Text,MG:=this.MediaGrid[Text]:=New MediaGrid(this,Text,(Atts.Border?Atts.Border:8),Style)
+			New:=this.createElement("Div",Parent),New.ID:=Text,MG:=this.MediaGrid[Text]:=New MediaGrid(this,Text,(Attributes.Border?Attributes.Border:8),Style)
 		else
 			New:=this.Doc.createElement(Type),(Parent?Parent:this.Doc.Body).AppendChild(New),(Text)?New.innerText:=Text:HTML?New.innerHTML:=HTML:""
-		for a,b in Atts
+		for a,b in Attributes
 			(a="Timer")?(this.Timers[b.ID]:={Name:b.Name,Period:b.Period},New.setAttribute("Timer",b.ID)):New.setAttribute(a,b)
 		for a,b in Style
 			StyleObj:=New.Style,StyleObj[a]:=b
@@ -317,7 +341,7 @@ Class HTMLGUI{
 		if(Type="DDL")
 			New.setAttribute("onchange","OnInput(event)")
 		if(Type="Checkbox")
-			Label:=this.createElement("Label",Parent,,Style,HTML)
+			Label:=this.createElement("Label",Parent,{Checkbox:Attributes.ID},Style,HTML)
 		return MG?MG:New
 	}CurrentNode(){
 		return this.Doc.activeElement
@@ -422,6 +446,28 @@ Class HTMLGUI{
 			this.Tab()
 		else
 			this.TabShift()
+	}DropFiles(Files,_,x,y){
+		Mouse:=A_CoordModeMouse
+		TT:=HTMLGUI.Keep[this]
+		WinActivate,% TT.ID
+		WinWaitActive,% TT.ID
+		CoordMode,Mouse,Client
+		MouseGetPos,x,y
+		CoordMode,Mouse,%Mouse%
+		element:=TT.Doc.elementFromPoint(x,y)
+		Type:=element.getAttribute("Type")
+		if(Type="MediaGrid"){
+			Node:=TT.querySelector("Div[ID='"(element.ID)"']"),Drop:=Node.getAttribute("Drop")
+			TT.GetFunc(Drop).Call(Files)
+		}else if(Listview:=element.getAttribute("Listview")){
+			if(Drop:=element.getAttribute("Drop"))
+				TT.GetFunc(Drop).Call(Files)
+			else
+				Node:=TT.querySelector("Div[ID='"(Listview)"']"),Drop:=Node.getAttribute("Drop"),TT.GetFunc(Drop).Call(Files)
+		}else if(Drop:=element.getAttribute("Drop"))
+			TT.GetFunc(Drop).Call(Files)
+		else if(IsFunc("DropFiles"))
+			TT.GetFunc("DropFiles").Call(Files)
 	}Escape(){
 		this:=HTMLGUI.Keep
 		this.GetLast()
@@ -490,6 +536,12 @@ Class HTMLGUI{
 			this.querySelector("Div[ID='"(Node.ID)"'] LI").setAttribute("Sel",1)
 	}GetBody(ExtraBodyStyle:=""){
 		return (ExtraBodyStyle?Body:=RegExReplace(this.BodyHTML,"'>",";"(ExtraBodyStyle)"'>"):this.BodyHTML)
+	}GetFunc(Function){
+		if(Fun:=this.FunctionObj[Function])
+			return Fun
+		else if(IsFunc(Function))
+			this.FunctionObj[Function]:=Func(Function)
+		return this.FunctionObj[Function]
 	}GetLI(Node){
 		while(Node&&Node.nodeName!="LI")
 			Node:=Node.parentNode
@@ -648,23 +700,14 @@ Class HTMLGUI{
 		while(this.WB.ReadyState!=4)
 			Sleep,10
 		Font:="Color:"(this.HeaderColor)";Font-Size:" this.Size "px;Background:"(this.Background)
-		this.Doc.Body.outerHTML:="<Body Style='Width:calc(100% - 4);Margin:0px;' ondrop='return false;'>"
-		this.Doc.Body.innerHTML:=HTML
-		this.AddCSS("Body{"(Font)"}")
-		this.AddCSS(".Container1 TH{Visibility:Hidden}")
-		this.AddCSS(".Outer{Border:1px Solid Grey;OverFlow:Hidden;Display:Block}")
-		this.AddCSS("TH Span{White-Space:NoWrap;Visibility:Visible;Position:Absolute;Text-Align:Center;"(Font)"}")
-		this.AddCSS(".Inner{OverFlow:Auto;Width:100%;Height:calc(100% - "(this.Size)"px);Margin-Top:"(this.Size)"px}")
-		this.AddCSS(".Container2 TD{White-Space:NoWrap}")
-		this.AddCSS(".Container2 TH{White-Space:NoWrap;Visibility:Hidden;Line-Height:0px;"(Font)"}")
-		this.AddCSS("UL,LI{list-style-type:None}")
-		this.AddCSS("Div[Type='TreeView']:focus LI[Sel='1']>Span[ID='Label']{Background:"(this.TreeViewSelectColor)";Border:0px}")
-		this.AddCSS("Div[Type='TreeView'] LI[Sel='1']>Span[ID='Label']{Background:'';Border:1px Solid "(this.TreeViewUnFocusedBorderColor)"}")
-		this.AddCSS("LI[Expand='1'][Type='Folder']>UL,LI{Display:Block}")
-		this.AddCSS("LI[Expand='']>Span[ID='Icon'].Open{Display:None}")
-		this.AddCSS("LI[Expand='1']>Span[ID='Icon'].Closed{Display:None}")
-		this.AddCSS("LI[Expand='']>UL{Display:None;Visibility:Hidden}")
-		for a,b in {onclick:"Click",ondblclick:"DoubleClick",scroll:"scroll",OnInput:"OnInput",Change:"Change",Search:"Search",oncontextmenu:"Mouse"}
+		this.Doc.Body.outerHTML:="<Body Style='Width:calc(100% - 4);Margin:0px;' ondrop='return false;'>",this.Doc.Body.innerHTML:=HTML
+		for a,b in ["Body{"(Font)"}",".Container1 TH{Visibility:Hidden}",".Outer{Border:1px Solid Grey;OverFlow:Hidden;Display:Block}","TH Span{White-Space:NoWrap;Visibility:Visible;Position:Absolute;Text-Align:Center;"(Font)"}"
+				 ,".Inner{OverFlow:Auto;Width:100%;Height:calc(100% - "(this.Size)"px);Margin-Top:"(this.Size+5)"px}",".Container2 TD{White-Space:NoWrap}",".Container2 TH{White-Space:NoWrap;Visibility:Hidden;Line-Height:0px;"(Font)"}"
+				 ,"UL,LI{list-style-type:None}","Div[Type='TreeView']:focus LI[Sel='1']>Span[ID='Label']{Background:"(this.TreeViewSelectColor)";Border:0px}","Div[Type='TreeView'] LI[Sel='1']>Span[ID='Label']{Background:'';Border:1px Solid "(this.TreeViewUnFocusedBorderColor)"}"
+				 ,"LI[Expand='1'][Type='Folder']>UL,LI{Display:Block}","LI[Expand='']>Span[ID='Icon'].Open{Display:None}","LI[Expand='1']>Span[ID='Icon'].Closed{Display:None}","LI[Expand='']>UL{Display:None;Visibility:Hidden}"]
+			this.AddCSS(b)
+		;here
+		for a,b in {onclick:"Click",ondblclick:"DoubleClick",scroll:"scroll",OnInput:"OnInput",Change:"Change",Search:"Search",oncontextmenu:"Mouse",onmouseleave:"Leave"}
 			this.createElement("Script").innerText:=a "=function(" a "){ahk_event('" b "',event)};"
 		for a,b in ["td{Border:1px Solid Grey;Padding:8px}","Body{Background-Color:"(this.Background)";Color:"(this.Color)";-MS-User-Select:None}","Table{Border-Collapse:Collapse;Border-Spacing:0;Width:100%}","Input:Focus{Background:#444;Color:#FFF;Border:2px Solid Orange}","Input{Background:"(this.Background)";Color:"(this.Color)"}",".Title{Color:"(this.TitleColor)"}"]
 			this.AddCSS(b)
@@ -827,11 +870,10 @@ Class MediaGrid{
 		for a,b in Options
 			this[a]:=b
 		this.HGUI:=HGUI,this.DivID:=DivID,this.Doc:=HGUI.Doc,HGUI.IG:=this,this.AddColor:=0x303030,this.Border:=Border,this.Div:=this.Doc.querySelector("#"(DivID)),this.Div.setAttribute("Type","MediaGrid"),this.Div.setAttribute("Class","Main"),this.Selected:=[],this.ChangeSel:=this.SetSelect.Bind(this)
-		this.createElement("Style").innerText:=".Div{OverFlow:Hidden;Float:Left;Background-Color:"(HGUI.Background)";Text-Align:Center;Position:Relative;Border:6px Solid Grey;Border-Radius:6px} .Div:After{Content:'';Display:Inline-Block;Vertical-Align:Middle}"
-		this.createElement("Style","Division").innerText:=".Div{Width:calc(33.333333`% - 16px);Height:calc(33.33333`% - 16px)}"
-		this.createElement("Style","DivAfter").innerText:="Img{Margin-Top:50`%;Margin-Bottom:Auto}"
-		this.createElement("Style","Labels").innerText:="Div[Type='MediaGrid'] Span{Display:Block;Text-Align:Center;Width:100%;Background-Color:"(this.HGUI.Background)";Bottom:0px;Font-Size:20px;Position:Absolute;Opacity:.7}"
-		this.createElement("Style","Focus").innerText:="Div[Type='MediaGrid']:Focus Span{Background:#303030}"
+		for a,b in {OverAll:".Div{OverFlow:Hidden;Float:Left;Background-Color:"(HGUI.Background)";Text-Align:Center;Position:Relative;Border:6px Solid Grey;Border-Radius:6px} .Div:After{Content:'';Display:Inline-Block;Vertical-Align:Middle}"
+				 ,Division:".Div{Width:calc(33.333333`% - 16px);Height:calc(33.33333`% - 16px)}",DivAfter:"Img{Margin-Top:50`%;Margin-Bottom:Auto}",Labels:"Div[Type='MediaGrid'] Span{Display:Block;Text-Align:Center;Width:100%;Background-Color:"(this.HGUI.Background)";Bottom:0px;Font-Size:20px;Position:Absolute;Opacity:.7}"
+				 ,Focus:"Div[Type='MediaGrid']:Focus Span{Background:#303030}"}
+			this.createElement("Style",a).innerText:=b
 		this.SetStates()
 	}createElement(Type,ID:=""){
 		New:=this.Doc.createElement(Type),this.Doc.Body.AppendChild(New),(ID?New.ID:=ID:"")
@@ -932,10 +974,10 @@ Class MediaGrid{
 		X:=Y:=1
 		for a,b in Media{
 			this.Media[b.OID]:=b
-			List.="<Div "(b.Current?"Current":"")" OID='"(b.OID)"' X='"(X)"' Y='"(Y)"' IG='Select' Class='Div' Type='MediaGrid' ID='"(this.DivID)"' Style='Border-Radius:"(this.Border)"px;Border:"(this.Border)"px Solid Grey;Float:Left'>"
-			List.="<Video OID='"(b.OID)"' X='"(X)"' Y='"(Y)"' ID='"(this.DivID)"' IG='Select' Style='Display:None;vertical-align: middle;Max-Width:100%;Max-Height:100%;Background:"(this.VideoBackground)"'></Video>"
-			List.="<Img OID='"(b.OID)"' X='"(X)"' Y='"(Y)"' ID='"(this.DivID)"' IG='Select' Style='vertical-align: middle;Max-Width:100%;Max-Height:100%'></Img>"
-			List.="<Span ID='"(this.DivID)"' X='"(X)"' Y='"(Y)"'>"(b.Text)"</Span></Div>"
+			List.="<Div "(b.Current?"Current":"")" OID='"(b.OID)"' X='"(X)"' Y='"(Y)"' Class='Div' Type='MediaGrid' ID='"(this.DivID)"' Style='Border-Radius:"(this.Border)"px;Border:"(this.Border)"px Solid Grey;Float:Left'>"
+			List.="<Video OID='"(b.OID)"' X='"(X)"' Y='"(Y)"' ID='"(this.DivID)"' Type='MediaGrid' Style='Display:None;vertical-align: middle;Max-Width:100%;Max-Height:100%;Background:"(this.VideoBackground)"'></Video>"
+			List.="<Img OID='"(b.OID)"' X='"(X)"' Y='"(Y)"' ID='"(this.DivID)"' Type='MediaGrid' Style='vertical-align: middle;Max-Width:100%;Max-Height:100%'></Img>"
+			List.="<Span Type='MediaGrid' ID='"(this.DivID)"' X='"(X)"' Y='"(Y)"'>"(b.Text)"</Span></Div>"
 			X++
 			if(X>this.X)
 				X:=1,Y++

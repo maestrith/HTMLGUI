@@ -2,7 +2,7 @@
 global GG:=New HTMLGUI(1,"",{Background:"Black",Size:30}),Different:=1
 GG.Reset()
 GG.createElement("Input",,{Function:"Input",IgnoreState:1,ID:"My_Search"})
-GG.createElement("DDL",,{Function:"DDL",ID:"MyDDL"},{Background:"Black",Color:"Yellow"},
+GG.createElement("DDL",,{Function:"DDL",ID:"MyDDL",Drop:"DDLDrop"},{Background:"Black",Color:"Yellow"},
 			 ,[{Value:"Apple",OID:1}
 			 ,{Value:"&#0191;Peach",OID:2,Style:"Color:Pink"}
 			 ,{Value:"Pear",OID:3}
@@ -12,12 +12,12 @@ GG.createElement("Button",,{Function:"Show"},,,"Show Stuff")
 GG.createElement("Button",,{Function:"Revert"},,,"Revert")
 GG.createElement("Button",,{Function:"Different"},,,"Different Tree")
 GG.createElement("Checkbox",,{ID:"Large",Function:"RefreshTree"},{"Font-Size":15,Color:"Yellow"},,"Large Tree")
-Div:=GG.createElement("Div",,,{Width:"100%",Height:"calc(50%)"})
+Div:=GG.createElement("Div",,,{Width:"100%",Height:"calc(50%)",Display:"Inline-Block"})
 GG.createElement("TreeView",Div,,{Width:300,Height:"100%",Float:"Left"},"MyTree")
-GG.createElement("ListView",Div,,{Width:"calc(100% - 304px)",Height:"calc(100% + 2px)",Float:"Left"},"MyList")
+GG.createElement("ListView",Div,{Drop:"MyListDrop"},{Width:"calc(100% - 304px)",Height:"calc(100% + 2px)",Float:"Left"},"MyList")
 GG.SubFolderIndent:="0px"
-MG:=GG.createElement("MediaGrid",Div,,{Width:"60%",Height:"calc(100% - 27px)"},"MG")
-GG.createElement("Span",,,{"Font-Size":25},,"Media Grid:</BR>Arrow Keys change the Selection</BR>Space Toggles Selection</BR>Double Click to Select</BR>Shift+Click to Toggle Selection</BR>Control+Click to Toggle Selection")
+MG:=GG.createElement("MediaGrid",Div,{Drop:"ImageDrop"},{Width:"60%",Height:"calc(100% - 27px)",Float:"Left"},"MG")
+GG.createElement("Span",Div,,{"Font-Size":25},,"Media Grid:</BR>Arrow Keys change the Selection</BR>Space Toggles Selection</BR>Double Click to Select</BR>Shift+Click to Toggle Selection</BR>Control+Click to Toggle Selection")
 Images:=[]
 Loop,Files,Images\*.*
 	Images.Push({SRC:A_LoopFileLongPath,OID:A_Index,Text:"Image: "(A_Index)})
@@ -26,12 +26,27 @@ MG.SelectHotkeys()
 GG.Show(,,1002,652)
 Different()
 GG.BuildLV("MyList",[{ID:"ID",Name:"ID Name"},{ID:"Title",Name:"The Title"},{ID:"Things",Name:"More Things"}])
-GG.BuildBody2([{ID:{Type:"Text",Value:4,OID:1},Title:{Type:"Input",Style:"Width:90%;Color:Pink",Value:"Neat",IgnoreState:1,Function:"This",OID:1},Things:{Type:"Checkbox",Checked:1,Value:"LOL",OID:1}}
+GG.BuildBody2([{ID:{Type:"Text",Value:4,OID:1},Title:{Type:"Input",Style:"Width:90%;Color:Pink",Value:"Neat",Drop:"Woot",IgnoreState:1,Function:"This",OID:1},Things:{Type:"Checkbox",Checked:1,Value:"LOL",OID:1}}
 		    ,{ID:{Type:"Text",Value:4,OID:2},Title:{Type:"Input",Value:"Fun",Function:"That",OID:2},Things:{Type:"Text",Value:"Other things",Function:"ClickMe",Style:"Cursor:Hand",OID:2}}],"MyList")
 GG.LabelOrder()
 GG.FixColumnHeaders()
 GG.Tab()
 return
+DropFiles(Files){ ;General Drop Destination
+	m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Here!",Files)
+}
+DDLDrop(Files){
+	m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Here!",Files)
+}
+Woot(Files){
+	m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Here!",Files)
+}
+MyListDrop(Files){
+	m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Here!",Files)
+}
+ImageDrop(Files){
+	m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Here!",Files)
+}
 F1::
 mHTML()
 return
@@ -111,5 +126,3 @@ TreeClick1(a,b,c){
 	*/
 }
 #Include <HTMLGUI>
-#Include <t>
-#Include <Obj2String>
