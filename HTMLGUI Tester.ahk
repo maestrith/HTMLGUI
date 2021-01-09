@@ -1,6 +1,9 @@
 ﻿#SingleInstance,Force
 global GG:=New HTMLGUI(1,"",{Background:"Black",Size:30}),Different:=1
 GG.Reset()
+/*
+	m("Function: " A_ThisFunc,"Line: " A_LineNumber,"MAKE AN INDIVIDUAL TAB LIST FROM THE LISTVIEW AND USE THE ARROWS TO NAVIGATE THE LISTVIEW")
+*/
 GG.createElement("Input",,{Function:"Input",IgnoreState:1,ID:"My_Search"})
 GG.createElement("DDL",,{Function:"DDL",ID:"MyDDL",Drop:"DDLDrop"},{Background:"Black",Color:"Yellow"},
 			 ,[{Value:"Apple",OID:1}
@@ -32,21 +35,6 @@ GG.LabelOrder()
 GG.FixColumnHeaders()
 GG.Tab()
 return
-DropFiles(Files){ ;General Drop Destination
-	m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Here!",Files)
-}
-DDLDrop(Files){
-	m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Here!",Files)
-}
-Woot(Files){
-	m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Here!",Files)
-}
-MyListDrop(Files){
-	m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Here!",Files)
-}
-ImageDrop(Files){
-	m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Here!",Files)
-}
 F1::
 mHTML()
 return
@@ -59,6 +47,9 @@ ClickMe(){
 DDL(Action,Value,Node){
 	t(Action,Value,Node.nodeName,"time:2") ;Using just Node here would show the entire Select Node which can be huge.
 }
+DDLDrop(Files){
+	m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Here!",Files)
+}
 Different(Refresh:=0){
 	static Count:=2
 	Different:=Refresh=1?1:Different+1
@@ -67,6 +58,12 @@ Different(Refresh:=0){
 	else
 		Tree1()
 }
+DropFiles(Files){ ;General Drop Destination
+	m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Here!",Files)
+}
+ImageDrop(Files){
+	m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Here!",Files)
+}
 Input(a,b,c){
 	t("Function: " A_ThisFunc,"Label: " A_ThisLabel,"Line: " A_LineNumber,"HERE!",b)
 }
@@ -74,6 +71,9 @@ m(x*){
 	for a,b in x
 		Msg.=(IsObject(b)?Obj2String(b):b)"`n"
 	MsgBox,%Msg%
+}
+MyListDrop(Files){
+	m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Here!",Files)
 }
 RefreshTree(){
 	Different(1)
@@ -124,5 +124,8 @@ TreeClick1(a,b,c){
 	/*
 		t("Function: " A_ThisFunc,"Label: " A_ThisLabel,"Line: " A_LineNumber,"HERE!",a,b,c)
 	*/
+}
+Woot(Files){
+	m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Here!",Files)
 }
 #Include <HTMLGUI>

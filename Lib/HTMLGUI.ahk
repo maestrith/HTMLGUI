@@ -53,6 +53,9 @@ Class HTMLGUI{
 				}this.TVSetSel(Tree,Node.getAttribute("OID"))
 			}if(Node.nodeName="Input"&&Name="Click"&&Type!="Checkbox")
 				return ComObjError(1)
+			if(Name="Click"&&Type="MediaGrid"){
+				this.MediaGrid[Node.ID].Click(Node)
+			}
 			if(Name="OnInput"||(Name="Click"&&Type~="i)(Checkbox|Select|Date)"))
 				this.CheckUpdated(Node)
 			if((Method:=Node.getAttribute("IG"))&&IsObject(IG:=this.IG))
@@ -875,6 +878,13 @@ Class MediaGrid{
 				 ,Focus:"Div[Type='MediaGrid']:Focus Span{Background:#303030}"}
 			this.createElement("Style",a).innerText:=b
 		this.SetStates()
+	}Click(Node){
+		this.querySelector("*[Current]").removeAttribute("Current")
+		while(Node.nodeName!="Div"&&Node)
+			Node:=Node.parentNode
+		if(GetKeyState("Shift")||GetKeyState("Ctrl"))
+			Node.setAttribute("Current"),(Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected"))
+		this.Highlight()
 	}createElement(Type,ID:=""){
 		New:=this.Doc.createElement(Type),this.Doc.Body.AppendChild(New),(ID?New.ID:=ID:"")
 		return New
