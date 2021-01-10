@@ -31,7 +31,6 @@ Different()
 GG.BuildLV("MyList",[{ID:"ID",Name:"ID Name"},{ID:"Title",Name:"The Title"},{ID:"Things",Name:"More Things"}])
 GG.BuildBody2([{ID:{Type:"Text",Value:4,OID:1},Title:{Type:"Input",Style:"Width:90%;Color:Pink",Value:"Neat",Drop:"Woot",IgnoreState:1,Function:"This",OID:1},Things:{Type:"Checkbox",Checked:1,Value:"LOL",OID:1}}
 		    ,{ID:{Type:"Text",Value:4,OID:2},Title:{Type:"Input",Value:"Fun",Function:"That",OID:2},Things:{Type:"Text",Value:"Other things",Function:"ClickMe",Style:"Cursor:Hand",OID:2}}],"MyList")
-GG.LabelOrder()
 GG.FixColumnHeaders()
 GG.Tab()
 return
@@ -74,6 +73,9 @@ m(x*){
 }
 MyListDrop(Files){
 	m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Here!",Files)
+}
+mNode(Node){
+	m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Here!",RegExReplace(Node.outerHTML,">.*",">"))
 }
 RefreshTree(){
 	Different(1)
