@@ -16,7 +16,11 @@ Class HTMLGUI{
 		static Events:=[],Last:=[]
 		Node:=Event.SrcElement,Ident:=Node.getAttribute("Ident")
 		;~ t("Function: " A_ThisFunc,"Label: " A_ThisLabel,"Line: " A_LineNumber,"HERE!",Name,SubStr(Node.outerHTML,1,500))
-		if(Node.getAttribute("Checkbox"))
+		if(Name="Mouse"){
+			if(Node.nodeName="Input")
+				return t("Function: " A_ThisFunc,"Label: " A_ThisLabel,"Line: " A_LineNumber,"HERE!")
+			return Event.preventDefault(),m("Nyce")
+		}if(Node.getAttribute("Checkbox"))
 			return Node.previousSibling.Click()
 		if(Node.nodeName="Option")
 			Node:=Node.parentNode
@@ -733,12 +737,11 @@ Class HTMLGUI{
 		for a,b in ["Body{"(Font)"}",".Container1 TH{Visibility:Hidden}",".Outer{Border:1px Solid Grey;OverFlow:Hidden;Display:Block}","TH Span{White-Space:NoWrap;Visibility:Visible;Position:Absolute;Text-Align:Center;"(Font)"}"
 				 ,".Inner{OverFlow:Auto;Width:100%;Height:calc(100% - "(this.Size)"px);Margin-Top:"(this.Size+5)"px}",".Container2 TD{White-Space:NoWrap}",".Container2 TH{White-Space:NoWrap;Visibility:Hidden;Line-Height:0px;"(Font)"}"
 				 ,"UL,LI{list-style-type:None}","Div[Type='TreeView']:focus LI[Sel='1']>Span[ID='Label']{Background:"(this.TreeViewSelectColor)";Border:0px}","Div[Type='TreeView'] LI[Sel='1']>Span[ID='Label']{Background:'';Border:1px Solid "(this.TreeViewUnFocusedBorderColor)"}"
-				 ,"LI[Expand='1'][Type='Folder']>UL,LI{Display:Block}","LI[Expand='']>Span[ID='Icon'].Open{Display:None}","LI[Expand='1']>Span[ID='Icon'].Closed{Display:None}","LI[Expand='']>UL{Display:None;Visibility:Hidden}"]
+				 ,"LI[Expand='1'][Type='Folder']>UL,LI{Display:Block}","LI[Expand='']>Span[ID='Icon'].Open{Display:None}","LI[Expand='1']>Span[ID='Icon'].Closed{Display:None}","LI[Expand='']>UL{Display:None;Visibility:Hidden}"
+				 ,"td{Border:1px Solid Grey;Padding:8px}","Body{Background-Color:"(this.Background)";Color:"(this.Color)";-MS-User-Select:None}","Table{Border-Collapse:Collapse;Border-Spacing:0;Width:100%}","Input:Focus{Background:#444;Color:#FFF;Border:2px Solid Orange}","Input{Background:"(this.Background)";Color:"(this.Color)"}",".Title{Color:"(this.TitleColor)"}"]
 			this.AddCSS(b)
 		for a,b in {onclick:"Click",ondblclick:"DoubleClick",scroll:"scroll",OnInput:"OnInput",Change:"Change",Search:"Search",oncontextmenu:"Mouse",onmouseleave:"Leave"}
 			this.createElement("Script").innerText:=a "=function(" a "){ahk_event('" b "',event)};"
-		for a,b in ["td{Border:1px Solid Grey;Padding:8px}","Body{Background-Color:"(this.Background)";Color:"(this.Color)";-MS-User-Select:None}","Table{Border-Collapse:Collapse;Border-Spacing:0;Width:100%}","Input:Focus{Background:#444;Color:#FFF;Border:2px Solid Orange}","Input{Background:"(this.Background)";Color:"(this.Color)"}",".Title{Color:"(this.TitleColor)"}"]
-			this.AddCSS(b)
 		this.createElement("Script").innerText:="clickIcon=function(clickIcon){ahk_event('clickIcon',event)};"
 		this.Columns:=[],this.Data:=[],this.LastSelected:=[],this.Styles:=[],this.StylesObj:=[],this.SelectedCSS:=[]
 		return this.Doc.ParentWindow.ahk_event:=this._Event.Bind(this)
@@ -837,9 +840,7 @@ Class HTMLGUI{
 				Node:=this.querySelector("*[Row='"(Row)"'][Col='"this.TabOrder[Row].MaxIndex()"']")
 			}if(!Node)
 				Node:=this.querySelector("*[Row='"(this.TabOrder.MaxIndex())"'][Col='"(this.TabOrder[this.TabOrder.MaxIndex()].MaxIndex())"']")
-		}
-		(Node.getAttribute("Type")="Listview")?(this.LastLV[(ListView:=Node.getAttribute("ListView"))]?(this.LastLV[ListView].Focus()):((this.LastLV[ListView]:=NN:=this.ListViewControls[ListView,(Max:=this.ListViewControls[ListView].MaxIndex()),this.ListViewControls[ListView,Max].MaxIndex()]).Focus(),(NN.getAttribute("Type")="Text"?NN.Select():""))):(Node.Focus(),(Node.nodeName="Input"?Node.Select():""),this.FocusTree(Node))
-		;~ (Node.getAttribute("Type")="Listview")?(this.LastLV[(ListView:=Node.getAttribute("ListView"))]?(this.LastLV[ListView].Focus()):((this.LastLV[ListView]:=NN:=Node.querySelector("Input,Select")).Focus(),(NN.getAttribute("Type")="Text"?NN.Select():""))):(Node.Focus(),(Node.nodeName="Input"?Node.Select():""),this.FocusTree(Node))
+		}(Node.getAttribute("Type")="Listview")?(this.LastLV[(ListView:=Node.getAttribute("ListView"))]?(this.LastLV[ListView].Focus()):((this.LastLV[ListView]:=NN:=this.ListViewControls[ListView,(Max:=this.ListViewControls[ListView].MaxIndex()),this.ListViewControls[ListView,Max].MaxIndex()]).Focus(),(NN.getAttribute("Type")="Text"?NN.Select():""))):(Node.Focus(),(Node.nodeName="Input"?Node.Select():""),this.FocusTree(Node))
 	}LVTestXY(ListView,Row,Col){
 		return this.querySelector("Div[ListView='"(ListView)"'] *[Row='"(Row)"'][Col='"(Col)"']")
 	}TriggerFunction(Node,Action:=""){
@@ -915,6 +916,11 @@ Class MediaGrid{
 			Node:=Node.parentNode
 		if(GetKeyState("Shift")||GetKeyState("Ctrl"))
 			Node.setAttribute("Current"),(Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected"))
+		else{
+			while(aa:=Node.parentNode.querySelectorAll("Div").Item[A_Index-1])
+				aa.removeAttribute("Selected")
+			Node.setAttribute("Current")
+		}
 		this.Highlight()
 	}createElement(Type,ID:=""){
 		New:=this.Doc.createElement(Type),this.Doc.Body.AppendChild(New),(ID?New.ID:=ID:"")
