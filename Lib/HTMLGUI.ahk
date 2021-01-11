@@ -57,9 +57,8 @@ Class HTMLGUI{
 				}this.TVSetSel(Tree,Node.getAttribute("OID"))
 			}if(Node.nodeName="Input"&&Name="Click"&&Type!="Checkbox")
 				return ComObjError(1)
-			if(Name="Click"&&Type="MediaGrid"){
-				this.MediaGrid[Node.ID].Click(Node)
-			}
+			if(Name="Click"||Name="DoubleClick"&&Type="MediaGrid")
+				return this.MediaGrid[Node.ID][Name](Node)
 			if(Name="OnInput"||(Name="Click"&&Type~="i)(Checkbox|Select|Date)"))
 				this.CheckUpdated(Node)
 			if((Method:=Node.getAttribute("IG"))&&IsObject(IG:=this.IG))
@@ -860,9 +859,6 @@ Class HTMLGUI{
 		while(aa:=All.Item[A_Index-1])
 			aa.removeAttribute("Sel",0)
 		this.querySelector("Div[ID='"(Control)"'] LI[OID='"(OID)"']").setAttribute("Sel",1)
-		/*
-			m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Here!",this.querySelector(Fuck:="Div[ID='"(Control)"'] LI[OID='"(OID)"']"),Fuck)
-		*/
 	}UpdateLanguage(){
 		All:=this.QuerySelectorAll("*[Language]")
 		while(aa:=All.Item[A_Index-1]){
@@ -911,20 +907,10 @@ Class MediaGrid{
 			this.createElement("Style",a).innerText:=b
 		this.SetStates()
 	}Click(Node){
-		this.querySelector("*[Current]").removeAttribute("Current")
-		while(Node.nodeName!="Div"&&Node)
-			Node:=Node.parentNode
-		if(GetKeyState("Shift")||GetKeyState("Ctrl"))
-			Node.setAttribute("Current"),(Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected"))
-		else{
-			while(aa:=Node.parentNode.querySelectorAll("Div").Item[A_Index-1])
-				aa.removeAttribute("Selected")
-			Node.setAttribute("Current")
-		}
-		this.Highlight()
+		this.NoCurrent(),Node:=this.GetDiv(Node),(GetKeyState("Shift")||GetKeyState("Ctrl"))?(Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected")):0,Node.setAttribute("Current"),this.Highlight()
 	}createElement(Type,ID:=""){
-		New:=this.Doc.createElement(Type),this.Doc.Body.AppendChild(New),(ID?New.ID:=ID:"")
-		return New
+		return New:=this.Doc.createElement(Type),this.Doc.Body.AppendChild(New),(ID?New.ID:=ID:"")
+		;~ return New
 	}CurrentMedia(){
 		return this.querySelector("Div[ID='"(this.DivID)"'] Div[Current]")
 	}DirectionHotkeys(Keys:=""){
@@ -987,6 +973,13 @@ Class MediaGrid{
 		PN:=Node.querySelector("Video")
 		if(PN)
 			PN.Play()
+	}DoubleClick(Node){
+		Node:=this.GetDiv(Node)
+		this.NoCurrent(),Node.setAttribute("Current"),(Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected")),this.Highlight()
+	}GetDiv(Node){
+		while(Node.nodeName!="Div"&&Node)
+			Node:=Node.parentNode
+		return Node
 	}GetSelected(Selected:=0){
 		All:=this.Doc.querySelectorAll("Div[ID='"(this.DivID)"'] Div"),Selected:=[]
 		while(aa:=All.Item[A_Index-1]){
@@ -1016,6 +1009,10 @@ Class MediaGrid{
 			else
 				aa.Style.Border:=(this.Border)"px Solid "("#"SubStr(Format("{:X}",(Selected?Sel:CC)+(Current?this.AddColor:0)),1,6))
 		}
+	}NoCurrent(){
+		All:=this.Div.querySelectorAll("Div[Current]")
+		while(aa:=All.Item[A_Index-1])
+			aa.removeAttribute("Current")
 	}Populate(Media,Current:=1){
 		this.X:=Ceil(Sqrt(Media.Count())),this.Y:=Round(Sqrt(Media.Count())),this.Media:=[]
 		X:=Y:=1
