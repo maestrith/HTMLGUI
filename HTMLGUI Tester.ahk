@@ -10,7 +10,7 @@ GG.createElement("DDL",,{Function:"DDL",ID:"MyDDL",Drop:"DDLDrop"},{Background:"
 			 ,{Value:"Kitty &#x1F63C;",OID:5,Selected:1}]) ;OID is not necessary but if you want it to be something other than 1,2,3,4...etc you can set it, just don't reuse them
 GG.createElement("Button",,{Function:"Show"},,,"Show Stuff")
 GG.createElement("Button",,{Function:"Revert"},,,"Revert")
-GG.createElement("Button",,{Function:"Different"},,,"Different Tree")
+GG.createElement("Button",,{Function:"Different",Menu:"Testing"},,,"Different Tree")
 GG.createElement("Checkbox",,{ID:"Large",Function:"RefreshTree"},{"Font-Size":15,Color:"Yellow"},,"Large Tree")
 Div:=GG.createElement("Div",,,{Width:"100%",Height:"calc(50%)",Display:"Inline-Block"})
 GG.createElement("TreeView",Div,,{Width:300,Height:"100%",Float:"Left"},"MyTree")
@@ -19,7 +19,7 @@ GG.SubFolderIndent:="0px"
 MG:=GG.createElement("MediaGrid",Div,{Drop:"ImageDrop"},{Width:"60%",Height:"calc(100% - 27px)",Float:"Left"},"MG")
 GG.createElement("Span",Div,,{"Font-Size":25},,"Media Grid:</BR>Arrow Keys change the Selection</BR>Space Toggles Selection</BR>Double Click to Select</BR>Shift+Click to Toggle Selection</BR>Control+Click to Toggle Selection")
 Images:=[]
-Loop,Files,Images\*.*
+Loop,Files,Images\*.bmp
 	Images.Push({SRC:A_LoopFileLongPath,OID:A_Index,Text:"Image: "(A_Index)})
 MG.Populate(Images)
 MG.SelectHotkeys()
@@ -29,8 +29,20 @@ GG.BuildLV("MyList",[{ID:"ID",Name:"ID Name"},{ID:"Title",Name:"The Title"},{ID:
 GG.BuildBody2([{ID:{Type:"Text",Value:4,OID:1},Title:{Type:"Input",Style:"Width:90%;Color:Pink",Value:"Neat",Drop:"Woot",IgnoreState:1,Function:"This",OID:1},Things:{Type:"Checkbox",Checked:1,Value:"LOL",OID:1}}
 		    ,{ID:{Type:"Text",Value:4,OID:2},Title:{Type:"Input",Value:"Fun",Function:"That",OID:2},Things:{Type:"Text",Value:"Other things",Function:"ClickMe",Style:"Cursor:Hand",OID:2}}],"MyList")
 GG.FixColumnHeaders()
+/*
+	
+*/
+/*
+	{Name:"Flan",Sub:{Name:"Moar",Function:"Things"},Name:"&Undo",Function:"Undo",Redo:"&Redo"}
+*/
+
+GG.SetRCM("",[{Name:"Cut",Function:"Cut"},{Name:"Copy",Function:"Copy"},{Name:"Do",Sub:[{Name:"Under",Sub:[{Name:"Things",Function:"Things"}]}]}])
+GG.SetRCM("Testing",[{Nice:"Job"}])
 GG.Tab()
 return
+Nifty(){
+	m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Nice")
+}
 F1::
 mHTML()
 return
@@ -128,5 +140,3 @@ Woot(Files){
 	m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Here!",Files)
 }
 #Include <HTMLGUI>
-#Include <t>
-#Include <Obj2String>
