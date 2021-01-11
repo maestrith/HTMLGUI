@@ -1,9 +1,6 @@
 ﻿#SingleInstance,Force
 global GG:=New HTMLGUI(1,"",{Background:"Black",Size:30}),Different:=1
 GG.Reset()
-/*
-	m("Function: " A_ThisFunc,"Line: " A_LineNumber,"MAKE AN INDIVIDUAL TAB LIST FROM THE LISTVIEW AND USE THE ARROWS TO NAVIGATE THE LISTVIEW")
-*/
 GG.createElement("Input",,{Function:"Input",IgnoreState:1,ID:"My_Search"})
 GG.createElement("DDL",,{Function:"DDL",ID:"MyDDL",Drop:"DDLDrop"},{Background:"Black",Color:"Yellow"},
 			 ,[{Value:"Apple",OID:1}

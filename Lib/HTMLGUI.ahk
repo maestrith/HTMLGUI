@@ -18,8 +18,8 @@ Class HTMLGUI{
 		;~ t("Function: " A_ThisFunc,"Label: " A_ThisLabel,"Line: " A_LineNumber,"HERE!",Name,SubStr(Node.outerHTML,1,500))
 		if(Name="Mouse"){
 			if(Node.nodeName="Input")
-				return t("Function: " A_ThisFunc,"Label: " A_ThisLabel,"Line: " A_LineNumber,"HERE!")
-			return Event.preventDefault(),m("Nyce")
+				return
+			return Event.preventDefault(),this.Menu(Node)
 		}if(Node.getAttribute("Checkbox"))
 			return Node.previousSibling.Click()
 		if(Node.nodeName="Option")
@@ -201,11 +201,11 @@ Class HTMLGUI{
 				else if(type="Checkbox")
 					Total.=Foo:="<TD Drop='"(Info.Drop)"' Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' "(Style?"Style='"(Style)"'":"")"><Div Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' Style='Flex-Wrap:NoWrap;Display:Flex;"(d.Style)"'><Input Drop='"(Info.Drop)"' Type='Checkbox' Function='"(Function)"' ListView='"(ListView)"' Lookup='"(Info.Lookup)"' OID='"(Info.OID)"' ID='"(ID)"' Value='"this.cleanHTML(Value)"' "(Info.Checked?" Checked ":"")" Style='"(d.Style)"'>"(Value)"</Span>"this.BuildExtra(d.Extra,Info.OID)"</Div></TD>"
 				else if(Type="Input")
-					Total.=Foo:="<TD Drop='"(Info.Drop)"' OID='"(Info.OID)"' ID='"(ID)"'><Input Drop='"(Info.Drop)"' IgnoreState='"(Info.IgnoreState)"' ListView='"(ListView)"' OID='"(Info.OID)"' Function='"(Function)"' ID='"(ID)"' Value='"this.cleanHTML(Value)"' Type='Text' Lookup='"(Info.Lookup)"' oninput='OnInput(event)'"(Style?" Style='"(Style)"'":"")"></Input>"this.BuildExtra(d.Extra,Info.OID)"</TD>"
+					Total.=Foo:="<TD ListView='"(ListView)"' Drop='"(Info.Drop)"' OID='"(Info.OID)"' ID='"(ID)"'><Input Drop='"(Info.Drop)"' IgnoreState='"(Info.IgnoreState)"' ListView='"(ListView)"' OID='"(Info.OID)"' Function='"(Function)"' ID='"(ID)"' Value='"this.cleanHTML(Value)"' Type='Text' Lookup='"(Info.Lookup)"' oninput='OnInput(event)'"(Style?" Style='"(Style)"'":"")"></Input>"this.BuildExtra(d.Extra,Info.OID)"</TD>"
 				else if(Type="Password")
-					Total.=Foo:="<TD Drop='"(Info.Drop)"' OID='"(Info.OID)"' ID='"(ID)"'><Input Drop='"(Info.Drop)"' IgnoreState='"(Info.IgnoreState)"' Type='Password' ListView='"(ListView)"' OID='"(Info.OID)"' Function='"(Function)"' ID='"(ID)"' Value='"this.cleanHTML(Value)"' Type='Text' Lookup='"(Info.Lookup)"' oninput='OnInput(event)'"(Style?" Style='"(Style)"'":"")"></Input>"this.BuildExtra(d.Extra,Info.OID)"</TD>"
+					Total.=Foo:="<TD ListView='"(ListView)"' Drop='"(Info.Drop)"' OID='"(Info.OID)"' ID='"(ID)"'><Input Drop='"(Info.Drop)"' IgnoreState='"(Info.IgnoreState)"' Type='Password' ListView='"(ListView)"' OID='"(Info.OID)"' Function='"(Function)"' ID='"(ID)"' Value='"this.cleanHTML(Value)"' Type='Text' Lookup='"(Info.Lookup)"' oninput='OnInput(event)'"(Style?" Style='"(Style)"'":"")"></Input>"this.BuildExtra(d.Extra,Info.OID)"</TD>"
 				else if(Type="Date")
-					Total.="<TD Drop='"(Info.Drop)"' OID='"(Info.OID)"' ID='"(ID)"' "(Style?"Style='"(Style)"'":"")"><Span ListView='"(ListView)"' Type='Date' Lookup='"(Info.Lookup)"' Function='"(Function)"' ID='"(ID)"' OID='"(Info.OID)"' Value='"this.cleanHTML(Value)"' Style='Cursor:Hand;Color:#3333FF' "(d.IgnoreState?"IgnoreState='1'":"")">"(Value)"</Span></TD>"
+					Total.="<TD ListView='"(ListView)"' Drop='"(Info.Drop)"' OID='"(Info.OID)"' ID='"(ID)"' "(Style?"Style='"(Style)"'":"")"><Span ListView='"(ListView)"' Type='Date' Lookup='"(Info.Lookup)"' Function='"(Function)"' ID='"(ID)"' OID='"(Info.OID)"' Value='"this.cleanHTML(Value)"' Style='Cursor:Hand;Color:#3333FF' "(d.IgnoreState?"IgnoreState='1'":"")">"(Value)"</Span></TD>"
 				else if(Type="DDL"){
 					Item:="<Select Drop='"(Info.Drop)"' IgnoreState='"(Info.IgnoreState)"' Value='"this.cleanHTML(Value)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' Label='" d.Label "' onchange='OnInput(Event)' Lookup='"(Info.Lookup)"' Column='" Column++ "' " AddAtt ""(b[d.ID].Style?" Style='"(b[d.ID].Style)"'":"")">"
 					for e,f in b.Value.DDL
@@ -320,19 +320,13 @@ Class HTMLGUI{
 		for a,b in Style
 			SSS.=(a)":"(b)";"
 		if(Type="ListView"){
-			New:=this.createElement("Div",Parent)
-			New.innerHTML:=this.LVHTML(Text)
-			this.MainGUI[Text]:=this.createElement("Style")
-			this.MainGUI[Text].innerText:="#"(Text)" Div.Container1{transform:translate(0px)}"
-			this.Functions[Text]:=Attributes.Function
-			Attributes.ListView:=Text,Attributes.Type:="ListView",Attributes.Control:="ListView"
-			New.ID:=Text
+			New:=this.createElement("Div",Parent),New.innerHTML:=this.LVHTML(Text),New.setAttribute("Control",Text),this.MainGUI[Text]:=this.createElement("Style"),this.MainGUI[Text].innerText:="#"(Text)" Div.Container1{transform:translate(0px)}",this.Functions[Text]:=Attributes.Function,Attributes.ListView:=Text,Attributes.Type:="ListView",Attributes.Control:="ListView",New.ID:=Text
 			for a,b in Attributes
 				New.setAttribute(a,b)
 		}else if(Type="Checkbox")
 			New:=this.createElement("Input",Parent,{ID:Attributes.ID,Type:"Checkbox"})
 		else if(Type="TreeView"){
-			New:=this.createElement("Div",Parent),New.ID:=Text,New.setAttribute("Tree",Text),this.MainGUI[Text]:=Attributes
+			New:=this.createElement("Div",Parent),New.ID:=Text,New.setAttribute("Control",Text),New.setAttribute("Tree",Text),this.MainGUI[Text]:=Attributes
 			if(!Style.Border)
 				New.Style.Border:="1px Solid Grey"
 			New.Style.OverFlow:="Auto",New.setAttribute("Type","TreeView")
@@ -556,6 +550,11 @@ Class HTMLGUI{
 			this.querySelector("Div[ID='"(Node.ID)"'] LI").setAttribute("Sel",1)
 	}GetBody(ExtraBodyStyle:=""){
 		return (ExtraBodyStyle?Body:=RegExReplace(this.BodyHTML,"'>",";"(ExtraBodyStyle)"'>"):this.BodyHTML)
+	}GetControl(Node){
+		if(Node.getAttribute("Tree")||Node.getAttribute("ListView"))
+			while(!Node.getAttribute("Control")&&Node)
+				Node:=Node.parentNode
+		return Node
 	}GetFunc(Function){
 		if(Fun:=this.FunctionObj[Function])
 			return Fun
@@ -680,6 +679,9 @@ Class HTMLGUI{
 			IfMsgBox,%a%
 				return b
 		return
+	}Menu(Node){
+		Node:=this.GetControl(Node)
+		m("Coming Soon")
 	}MinSize(W:=100,H:=100){
 		Gui,% this.Win ":+MinSize"(W)(H?"x"(H):"")
 		Pos:=this.WinPos()
@@ -1034,23 +1036,16 @@ Class MediaGrid{
 		if(a="DoubleClick"){
 			if(Node.querySelector("Video").Style.Display="None")
 				return (Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected")),this.Highlight()
-			Node:=Node.querySelector("Video")
-			if(Node.Paused)
-				Node.Play()
-			else
-				Node.Pause()
+			(Node:=Node.querySelector("Video")?((Node.Paused)?Node.Play():Node.Pause()):0)
 		}else if(a="Click"){
-			if(GetKeyState("Shift")||GetKeyState("Control")){
+			if(GetKeyState("Shift")||GetKeyState("Control"))
 				(Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected"))
-			}else{
-				All:=this.querySelectorAll("Div[ID='"(this.DivID)"'] Div")
-				while(aa:=All.Item[A_Index-1])
+			else{
+				while(aa:=this.querySelectorAll("Div[ID='"(this.DivID)"'] Div").Item[A_Index-1])
 					aa.removeAttribute("Selected"),aa.removeAttribute("Current")
 				Node.setAttribute("Current")
-			}
-			this.Highlight()
-		}
-	}SelectHotkeys(Keys:=""){
+			}this.Highlight()
+	}}SelectHotkeys(Keys:=""){
 		Keys:=IsObject(Keys)?Keys:[]
 		for a,b in ["Space"]
 			Keys[b]:=b
@@ -1059,27 +1054,16 @@ Class MediaGrid{
 		for a,b in Keys{
 			Hotkey,%a%,%Sel%,On
 			this.SelectionHotkeys[a]:=b
-		}
-	}SetMediaState(State,OID:=""){
-		if(State="")
-			return
-		Node:=this.querySelector((OID?"Div[OID='"(OID)"']":"Div[Current]"))
-		Node.setAttribute("State",State)
-		this.Highlight()
+	}}SetMediaState(State,OID:=""){
+		(State?(Node:=this.querySelector((OID?"Div[OID='"(OID)"']":"Div[Current]")),Node.setAttribute("State",State),this.Highlight()):0)
 	}SetStates(Colors:=""){
 		this.States:=[]
-		for a,b in {Selected:"AA0088",Normal:"CCCCCC"}{
-			Color:=Trim(b,"#")
-			this.States[a]:=Color
-		}
-		for a,b in Colors{
-			Color:=Trim(b,"#")
-			this.States[a]:=Color
-		}
+		for a,b in {Selected:"AA0088",Normal:"CCCCCC"}
+			Color:=Trim(b,"#"),this.States[a]:=Color
+		for a,b in Colors
+			Color:=Trim(b,"#"),this.States[a]:=Color
 	}SetSelect(a*){
-		Node:=this.querySelector("Div[Current]")
-		(Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected"))
-		this.Highlight()
+		Node:=this.querySelector("Div[Current]"),(Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected")),this.Highlight()
 	}Size(W:="",H:=""){
 		this.querySelector("#DivAfter").innerText:=".Div:After{Height:"((this.Div.offsetHeight/this.Y)-(this.Border*2)-2)"px}"
 	}TestXY(X,Y){
