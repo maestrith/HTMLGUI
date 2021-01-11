@@ -58,7 +58,7 @@ Class HTMLGUI{
 			}if(Node.nodeName="Input"&&Name="Click"&&Type!="Checkbox")
 				return ComObjError(1)
 			if(Name="Click"||Name="DoubleClick"&&Type="MediaGrid")
-				return this.MediaGrid[Node.ID][Name](Node)
+				this.MediaGrid[Node.ID][Name](Node)
 			if(Name="OnInput"||(Name="Click"&&Type~="i)(Checkbox|Select|Date)"))
 				this.CheckUpdated(Node)
 			if((Method:=Node.getAttribute("IG"))&&IsObject(IG:=this.IG))
@@ -910,7 +910,6 @@ Class MediaGrid{
 		this.NoCurrent(),Node:=this.GetDiv(Node),(GetKeyState("Shift")||GetKeyState("Ctrl"))?(Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected")):0,Node.setAttribute("Current"),this.Highlight()
 	}createElement(Type,ID:=""){
 		return New:=this.Doc.createElement(Type),this.Doc.Body.AppendChild(New),(ID?New.ID:=ID:"")
-		;~ return New
 	}CurrentMedia(){
 		return this.querySelector("Div[ID='"(this.DivID)"'] Div[Current]")
 	}DirectionHotkeys(Keys:=""){
@@ -939,8 +938,7 @@ Class MediaGrid{
 			if(FF:=Functions[Fun])
 				FF.Call(Key)
 			return t("Function: " A_ThisFunc,"Label: " A_ThisLabel,"Line: " A_LineNumber,"HERE!",Node)
-		}
-		if(NN:=Doc.querySelector("Div[ID='"(this.DivID)"'] Div[Selected]"))
+		}if(NN:=Doc.querySelector("Div[ID='"(this.DivID)"'] Div[Selected]"))
 			NN.removeAttribute("Current")
 		if(a.1&&a.2){
 			(this.TestXY(a.1,a.2))?(X:=a.1,Y:=a.2):(X:=Y:=1),Node:=this.Doc.querySelector(Foo:="Div[ID='"(this.DivID)"'] Div[X='"(X)"'][Y='"(Y)"']")
@@ -969,10 +967,7 @@ Class MediaGrid{
 					X:=XX
 				}
 			}Node:=this.Doc.querySelector(Foo:="Div[ID='"(this.DivID)"'] Div[X='"(X)"'][Y='"(Y)"']")
-		}this.querySelector("Div[Current]").removeAttribute("Current"),Node.setAttribute("Current"),Node.Focus(),this.Highlight()
-		PN:=Node.querySelector("Video")
-		if(PN)
-			PN.Play()
+		}this.querySelector("Div[Current]").removeAttribute("Current"),Node.setAttribute("Current"),Node.Focus(),this.Highlight(),(PN:=Node.querySelector("Video")?PN.Play():0)
 	}DoubleClick(Node){
 		Node:=this.GetDiv(Node)
 		this.NoCurrent(),Node.setAttribute("Current"),(Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected")),this.Highlight()
