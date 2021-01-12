@@ -67,7 +67,7 @@ Class HTMLGUI{
 				this.CheckUpdated(Node)
 			if((Method:=Node.getAttribute("IG"))&&IsObject(IG:=this.IG))
 				return IG[Method](Name,Value,Node)
-			if(Function:=Node.getAttribute("Function")){
+			if((Function:=Node.getAttribute("Function"))||(Node.getAttribute("Tree")&&(Function:=this.GetLI(Node).getAttribute("Function")))){
 				if(IsLabel(Function))
 					SetTimer,%Function%,-1
 				return Func(Function).Call(Name,Value,Node,Obj.Which)
@@ -360,7 +360,7 @@ Class HTMLGUI{
 			for a,b in HTML
 				New.AppendChild(Option:=this.Doc.createElement("Option")),Option.Value:=b.Value,Option.innerHTML:=b.Value,Option.setAttribute("OValue",b.Value),Option.setAttribute("OID",(b.OID?b.OID:A_Index)),Option.setAttribute("Style",(b.Style?b.Style:SSS)),(b.Selected)?Option.setAttribute("Selected"):""
 		}else if(Type="MediaGrid")
-			New:=this.createElement("Div",Parent),New.ID:=Text,MG:=this.MediaGrid[Text]:=New this.MediaGridClass(this,Text,(Attributes.Border?Attributes.Border:8),Style)
+			New:=this.createElement("Div",Parent),New.ID:=Text,New.setAttribute("Control",Text),MG:=this.MediaGrid[Text]:=New this.MediaGridClass(this,Text,(Attributes.Border?Attributes.Border:8),Style)
 		else
 			New:=this.Doc.createElement(Type),(Parent?Parent:this.Doc.Body).AppendChild(New),(Text)?New.innerText:=Text:HTML?New.innerHTML:=HTML:""
 		for a,b in Attributes
@@ -578,9 +578,10 @@ Class HTMLGUI{
 	}GetBody(ExtraBodyStyle:=""){
 		return (ExtraBodyStyle?Body:=RegExReplace(this.BodyHTML,"'>",";"(ExtraBodyStyle)"'>"):this.BodyHTML)
 	}GetControl(Node){
-		if(Node.getAttribute("Tree")||Node.getAttribute("ListView"))
+		if(Node.getAttribute("Tree")||Node.getAttribute("ListView")||Node.getAttribute("Type")="MediaGrid"){
 			while(!Node.getAttribute("Control")&&Node)
 				Node:=Node.parentNode
+		}
 		return Node
 	}GetFunc(Function){
 		if(Fun:=this.FunctionObj[Function])
@@ -900,14 +901,8 @@ Class HTMLGUI{
 			aa.removeAttribute("Sel",0)
 		this.querySelector("Div[ID='"(Control)"'] LI[OID='"(OID)"']").setAttribute("Sel",1)
 	}UpdateLanguage(){
-		All:=this.QuerySelectorAll("*[Language]")
-		while(aa:=All.Item[A_Index-1]){
-			/*
-				if(v.Testing)
-					m(aa.getAttribute("Language"),this.CurrentScreen,this.Current)
-			*/
+		while(aa:=this.QuerySelectorAll("*[Language]").Item[A_Index-1])
 			aa.innerHTML:=this.LanguageObj[this.CurrentScreen,aa.getAttribute("Language"),this.CurrentLanguage]
-		}
 	}Values(){
 		All:=GG.querySelectorAll("Input,Select"),Values:=[]
 		while(aa:=All.Item[A_Index-1]){
@@ -919,10 +914,14 @@ Class HTMLGUI{
 			}else if(aa.nodeName="Select")
 				Values[aa.ID,aa.querySelector("Option[Selected]").getAttribute("OID")]:=aa.Value
 			else if(aa.nodeName="Input")
-				Values[aa.ID]:=aa.Value
+				Values[aa.ID]:=(aa.getAttribute("Type")="Checkbox"?aa.Checked:aa.Value)
 		}All:=GG.querySelectorAll("Div[Type='Treeview']")
 		while(aa:=All.Item[A_Index-1])
 			Node:=aa.querySelector("LI[Sel]"),Values[aa.ID,Node.getAttribute("OID")]:=Node.querySelector("#Label").innerText
+		for a,b in this.Mediagrid{
+			while(aa:=b.Div.querySelectorAll("Div[Selected]").Item[A_Index-1])
+				Values[a].=(Values[a]?",":"")(aa.getAttribute("OID"))
+		}
 		return Values
 	}WinPos(HWND:=""){
 		HWND:=HWND?HWND:this.HWND,VarSetCapacity(Rect,16)
@@ -964,8 +963,7 @@ Class HTMLGUI{
 			Key:=(a.1&&!a.2?a.1:A_ThisHotkey)
 			if(!Node:=this.Div.querySelector("*[Current]"))
 				return (Node:=this.Div.querySelector("*[X='1'][Y='1']")).setAttribute("Current"),Node.Focus(),this.Highlight()
-			PN:=Node.querySelector("Video")
-			if(PN.SRC)
+			if(!(PN:=Node.querySelector("Video")).Paused&&this.HGUI.GetControl(PN).getAttribute("AutoPlay"))
 				PN.Pause()
 			if(Node.ID!=this.DivID){
 				Fun:=this.HotkeyDirections[Key]
@@ -973,7 +971,7 @@ Class HTMLGUI{
 					Functions[Fun]:=Func(Fun)
 				if(FF:=Functions[Fun])
 					FF.Call(Key)
-				return t("Function: " A_ThisFunc,"Label: " A_ThisLabel,"Line: " A_LineNumber,"HERE!",Node)
+				return
 			}if(NN:=Doc.querySelector("Div[ID='"(this.DivID)"'] Div[Selected]"))
 				NN.removeAttribute("Current")
 			if(a.1&&a.2){
@@ -1003,7 +1001,7 @@ Class HTMLGUI{
 						X:=XX
 					}
 				}Node:=this.Doc.querySelector(Foo:="Div[ID='"(this.DivID)"'] Div[X='"(X)"'][Y='"(Y)"']")
-			}this.querySelector("Div[Current]").removeAttribute("Current"),Node.setAttribute("Current"),Node.Focus(),this.Highlight(),(PN:=Node.querySelector("Video")?PN.Play():0)
+			}this.querySelector("Div[Current]").removeAttribute("Current"),Node.setAttribute("Current"),Node.Focus(),this.Highlight(),((PN:=Node.querySelector("Video"))&&this.HGUI.GetControl(PN).getAttribute("AutoPlay")?PN.Play():0)
 		}DoubleClick(Node){
 			Node:=this.GetDiv(Node)
 			this.NoCurrent(),Node.setAttribute("Current"),(Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected")),this.Highlight()
@@ -1058,7 +1056,7 @@ Class HTMLGUI{
 			for a,b in Media{
 				Node:=this.querySelector(Foo:="Div[ID='"(this.DivID)"'] Div:nth-of-type("(A_Index)")")
 				(SubStr(b.SRC,-2)="mp4")?((Vid:=Node.querySelector("Video")).SRC:=b.SRC,Vid.Style.Display:="Inline-Block",Node.querySelector("Img").Style.Display:="None",Node.Style.Background:=this.VideoBackground,Node.querySelector("Video").Volume:=this.Volume):((Img:=Node.querySelector("Img")).SRC:=b.SRC,Img.Style.Display:="Inline-Block",Node.querySelector("Video").Style.Display:="None",Node.Style.Background:=this.HGUI.Background)
-			}this.querySelector("#Division").innerText:=".Div{Width:calc("(100/this.X)"% - "(this.Border*2)"px);Height:calc("(100/this.Y)"% - "(this.Border*2)"px)}",this.Highlight()
+			}this.querySelector("#Division").innerText:=".Div{Width:calc("(100/this.X)"% - "(this.Border*2)"px);Height:calc("(100/this.Y)"% - "(this.Border*2)"px)}",this.Highlight(),(this.Div.getAttribute("AutoPlay")?((Vid:=this.Div.querySelector("Div[Current] Video")).SRC?Vid.Play():0):0)
 		}querySelector(Query){
 			return this.Doc.querySelector(Query)
 		}querySelectorAll(Query){
@@ -1070,7 +1068,7 @@ Class HTMLGUI{
 			if(a="DoubleClick"){
 				if(Node.querySelector("Video").Style.Display="None")
 					return (Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected")),this.Highlight()
-				(Node:=Node.querySelector("Video")?((Node.Paused)?Node.Play():Node.Pause()):0)
+				(Node:=Node.querySelector("Video")?((!Node.Paused)?Node.Play():Node.Pause()):0)
 			}else if(a="Click"){
 				if(GetKeyState("Shift")||GetKeyState("Control"))
 					(Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected"))
@@ -1080,15 +1078,14 @@ Class HTMLGUI{
 					Node.setAttribute("Current")
 				}this.Highlight()
 		}}SelectHotkeys(Keys:=""){
-			Keys:=IsObject(Keys)?Keys:[]
-			for a,b in ["Space","+Left","+Up","+Right","+Down","^a"]
-				Keys[b]:=b
+			this.MediaKeys:=IsObject(Keys)?Keys:[]
+			for a,b in {Space:"Select","+Left":"All_Left","+Up":"All_Up","+Right":"All_Right","+Down":"All_Down","^a":"Select_All",p:"Play_Pause"}
+				this.MediaKeys[a]:=b
 			Hotkey,IfWinActive,% this.HGUI.ID
-			Sel:=this.ChangeSel,this.SelectionHotkeys:=[]
-			for a,b in Keys{
+			Sel:=this.ChangeSel
+			for a,b in this.MediaKeys
 				Hotkey,%a%,%Sel%,On
-				this.SelectionHotkeys[a]:=b
-		}}SetMediaState(State,OID:=""){
+		}SetMediaState(State,OID:=""){
 			(State?(Node:=this.querySelector((OID?"Div[OID='"(OID)"']":"Div[Current]")),Node.setAttribute("State",State),this.Highlight()):0)
 		}SetStates(Colors:=""){
 			this.States:=[]
@@ -1097,14 +1094,20 @@ Class HTMLGUI{
 			for a,b in Colors
 				Color:=Trim(b,"#"),this.States[a]:=Color
 		}SetSelect(a*){
-			Node:=this.Div.querySelector("Div[Current]"),X:=Node.getAttribute("X"),Y:=Node.getAttribute("Y")
-			if((Key:=SubStr(A_ThisHotkey,2))="pace")
+			if(this.Doc.activeElement.getAttribute("Type")!="MediaGrid"){
+				Send,{%A_ThisHotkey%}
+				return
+			}Node:=this.Div.querySelector("Div[Current]"),X:=Node.getAttribute("X"),Y:=Node.getAttribute("Y"),Key:=SubStr(A_ThisHotkey,2),Action:=this.MediaKeys[A_ThisHotkey]
+			if(Action="Select")
 				(Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected"))
-			else if(Key="a"){
+			else if(Action="Play_Pause"){
+				if((Vid:=Node.querySelector("Video")).SRC)
+					(Vid.Paused?Vid.Play():Vid.Pause())
+			}else if(Action="Select_All"){
 				while(aa:=this.Div.querySelectorAll("Div").Item[A_Index-1])
 					(aa.hasAttribute("Selected")?aa.removeAttribute("Selected"):aa.setAttribute("Selected"))
 			}else{
-				(Key="Left"?(Direction:="X",Add:=-1,Start:=X):(Key="Right")?(Direction:="X",Add:=1,Start:=X):(Key="Up")?(Direction:="Y",Add:=-1,Start:=Y):(Direction:="Y",Add:=1,Start:=Y))
+				(Action="All_Left"?(Direction:="X",Add:=-1,Start:=X):(Action="All_Right")?(Direction:="X",Add:=1,Start:=X):(Action="All_Up")?(Direction:="Y",Add:=-1,Start:=Y):(Direction:="Y",Add:=1,Start:=Y))
 				while(Start<=this[Direction]&&Start>0)
 					Node:=this.Div.querySelector((Direction="X"?"Div[X='"(Start)"'][Y='"(Y)"']":"Div[X='"(X)"'][Y='"(Start)"']")),(Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected")),Start+=Add
 			}this.Highlight()
