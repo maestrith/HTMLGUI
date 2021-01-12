@@ -18,7 +18,7 @@ GG.createElement("TreeView",Div,,{Width:300,Height:"100%",Float:"Left"},"MyTree"
 GG.createElement("ListView",Div,{Drop:"MyListDrop"},{Width:"calc(100% - 304px)",Height:"calc(100% + 2px)",Float:"Left"},"MyList")
 GG.SubFolderIndent:="0px"
 MG:=GG.createElement("MediaGrid",Div,{Drop:"ImageDrop",AutoPlay:1},{Width:"60%",Height:"calc(100% - 27px)",Float:"Left"},"MG")
-GG.createElement("Span",Div,,{"Font-Size":25},,"Media Grid:</BR>Arrow Keys change the Selection</BR>Space Toggles Selection</BR>Double Click to Select</BR>Shift+Click to Toggle Selection</BR>Control+Click to Toggle Selection</BR>Ctrl+A to Toggle the Selection for All Items</BR>Shift+(Left/Up/Right/Down) to Toggle Selection in that direction")
+GG.createElement("Span",Div,,{"Font-Size":25},,"Media Grid:</BR>Arrow Keys change the Selection</BR>Space Toggles Selection</BR>Double Click to Select</BR>Shift+Click to Toggle Selection</BR>Control+Click to Toggle Selection</BR>Ctrl+A to Toggle the Selection for All Items</BR>Shift+(Left/Up/Right/Down) to Toggle Selection in that direction</BR>P to Play/Pause Media")
 Images:=[]
 Loop,Files,Images\*.*
 	Images.Push({SRC:A_LoopFileLongPath,OID:A_Index,Text:"Image: "(A_Index)})
@@ -133,10 +133,10 @@ Tree2(){
 	GG.BuildTree(TT,"MyTree")
 }
 TreeClick1(a,b,c){
-	t("Function: " A_ThisFunc,"Label: " A_ThisLabel,"Line: " A_LineNumber,"HERE!",a,b,c,"time:3")
+	t("Function: " A_ThisFunc,"Label: " A_ThisLabel,"Line: " A_LineNumber,"HERE!",a,b,c,"Will go away in 3 seconds","time:3")
 }
 TreeClick2(){
-	t("Function: " A_ThisFunc,"Label: " A_ThisLabel,"Line: " A_LineNumber,"HERE!","time:1")
+	t("Function: " A_ThisFunc,"Label: " A_ThisLabel,"Line: " A_LineNumber,"HERE!","Will go away in 1 second","time:1")
 }
 Woot(Files){
 	m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Here!",Files)
