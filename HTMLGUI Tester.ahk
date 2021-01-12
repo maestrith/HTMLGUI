@@ -23,25 +23,22 @@ Loop,Files,Images\*.bmp
 	Images.Push({SRC:A_LoopFileLongPath,OID:A_Index,Text:"Image: "(A_Index)})
 MG.Populate(Images)
 MG.SelectHotkeys()
-GG.Show(,,1002,652)
 Different()
 GG.BuildLV("MyList",[{ID:"ID",Name:"ID Name"},{ID:"Title",Name:"The Title"},{ID:"Things",Name:"More Things"}])
 GG.BuildBody2([{ID:{Type:"Text",Value:4,OID:1},Title:{Type:"Input",Style:"Width:90%;Color:Pink",Value:"Neat",Drop:"Woot",IgnoreState:1,Function:"This",OID:1},Things:{Type:"Checkbox",Checked:1,Value:"LOL",OID:1}}
-		    ,{ID:{Type:"Text",Value:4,OID:2},Title:{Type:"Input",Value:"Fun",Function:"That",OID:2},Things:{Type:"Text",Value:"Other things",Function:"ClickMe",Style:"Cursor:Hand",OID:2}}],"MyList")
-GG.FixColumnHeaders()
-/*
-	
-*/
-/*
-	{Name:"Flan",Sub:{Name:"Moar",Function:"Things"},Name:"&Undo",Function:"Undo",Redo:"&Redo"}
-*/
-
-GG.SetRCM("",[{Name:"Cut",Function:"Cut"},{Name:"Copy",Function:"Copy"},{Name:"Do",Sub:[{Name:"Under",Sub:[{Name:"Things",Function:"Things"}]}]}])
-GG.SetRCM("Testing",[{Nice:"Job"}])
+		    ,{ID:{Type:"Text",Value:4,OID:2},Title:{Type:"Input",Value:"Fun",Menu:"Testing",Function:"That",OID:2},Things:{Type:"Text",Value:"Other things",Function:"ClickMe",Style:"Cursor:Hand",OID:2}}],"MyList")
 GG.Tab()
+GG.Menus("Testing","<Menu><Item Name='First'><Item Name='Under First' Function='Under'/></Item><Item Name='Testing' Function='Testing'/></Menu>")
+GG.Show(,,1002,652)
 return
 Nifty(){
 	m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Nice")
+}
+Testing(MenuItem,Position,Menu){
+	m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Here!",Menu,Position,MenuItem)
+}
+Under(MenuItem,Position,Menu){
+	m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Here!",Menu,Position,MenuItem)
 }
 F1::
 mHTML()
@@ -105,8 +102,8 @@ This(a,b,c){
 	t("Function: " A_ThisFunc,"Label: " A_ThisLabel,"Line: " A_LineNumber,"HERE!",a,b,c,"time:1")
 }
 Tree1(){
-	Tree:=[{OID:1,Value:"Neat",Parent:"",ClosedIcon:"&#x21C9;",OpenIcon:"&#x2B87;",IconStyle:"Color:Purple",Style:"Color:Pink",Expand:1}
-		 ,{OID:2,Function:"TreeClick1",Value:"<U>S</U><Span Style='Color:Yellow'>t</Span><Span Style='Color:Purple'>u</Span>ff With a lot of text to show </BR> that it will scroll to the right or left depending on what the text is",Parent:1,ClosedIcon:"&#x1F63C;",OpenIcon:"&#x1F63C;",ClosedIconStyle:"Color:Orange",IconStyle:"Color:Purple",Style:{Color:"Pink"}}
+	Tree:=[{OID:1,Menu:"Testing",Value:"Neat",Parent:"",ClosedIcon:"&#x21C9;",OpenIcon:"&#x2B87;",IconStyle:"Color:Purple",Style:"Color:Pink",Expand:1}
+		 ,{OID:2,Menu:"Testing",Function:"TreeClick1",Value:"<U>S</U><Span Style='Color:Yellow'>t</Span><Span Style='Color:Purple'>u</Span>ff With a lot of text to show </BR> that it will scroll to the right or left depending on what the text is",Parent:1,ClosedIcon:"&#x1F63C;",OpenIcon:"&#x1F63C;",ClosedIconStyle:"Color:Orange",IconStyle:"Color:Purple",Style:{Color:"Pink"}}
 		 ,{OID:3,Function:"TreeClick2",Value:"<U>S</U><Span Style='Color:Yellow'>t</Span><Span Style='Color:Purple'>u</Span>ff",Parent:1,ClosedIcon:"&#x1F63C;",OpenIcon:"&#x1F63C;",ClosedIconStyle:"Color:Orange",IconStyle:"Color:Purple",Style:{Color:"Pink"}}
 		 ,{OID:4,Value:"Folder",Type:"Folder",Parent:0,Style:"Color:Pink"}
 		 ,{OID:5,Value:"In Folder",Parent:4,Icon:"&#0191;",IconStyle:"Color:Orange",Style:"Color:Pink"}]
