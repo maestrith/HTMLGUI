@@ -1,7 +1,7 @@
 ﻿#SingleInstance,Force
 global GG:=New HTMLGUI(1,"",{Background:"Black",Size:30}),Different:=1
 GG.Reset()
-GG.SetLanguageObj({Main:{Show:{English:"Show Values",Jibberish:"Flhsoqns"},Save:{English:"Save",Jibberish:"oEioah#"}}})
+GG.SetLanguageObj({Main:{Show:{English:"Show Values",Jibberish:"Flhsoqns"},Save:{English:"Save",Jibberish:"oEioah#"},Language:{English:"Jibberish",Jibberish:"English"}}})
 GG.createElement("Input",,{Function:"Input",IgnoreState:1,ID:"My_Search"})
 GG.createElement("DDL",,{Function:"DDL",ID:"MyDDL",Drop:"DDLDrop"},{Background:"Black",Color:"Yellow"},
 			 ,[{Value:"Apple",OID:1}
@@ -13,7 +13,7 @@ GG.createElement("Button",,{Function:"Show",Language:"Show"},,,"Show Values")
 GG.createElement("Button",,{Function:"Save",Language:"Save"},,,"Save Edited")
 GG.createElement("Button",,{Function:"Revert"},,,"Revert")
 GG.createElement("Button",,{Function:"Different",Menu:"Testing"},,,"Different Tree")
-GG.createElement("Button",,{Function:"Change_Language"},,,"Change Language")
+GG.createElement("Button",,{Function:"Change_Language",Language:"Language"},,,"Change Language")
 GG.createElement("Checkbox",,{ID:"Large",Function:"RefreshTree"},{"Font-Size":15,Color:"Yellow"},,"Large Tree")
 Div:=GG.createElement("Div",,,{Width:"100%",Height:"calc(50%)",Display:"Inline-Block"})
 GG.createElement("TreeView",Div,,{Width:300,Height:"100%",Float:"Left"},"MyTree")
