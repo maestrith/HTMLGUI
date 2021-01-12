@@ -1,6 +1,7 @@
 ﻿#SingleInstance,Force
 global GG:=New HTMLGUI(1,"",{Background:"Black",Size:30}),Different:=1
 GG.Reset()
+GG.SetLanguageObj({Main:{Show:{English:"Show Values",Jibberish:"Flhsoqns"},Save:{English:"Save",Jibberish:"oEioah#"}}})
 GG.createElement("Input",,{Function:"Input",IgnoreState:1,ID:"My_Search"})
 GG.createElement("DDL",,{Function:"DDL",ID:"MyDDL",Drop:"DDLDrop"},{Background:"Black",Color:"Yellow"},
 			 ,[{Value:"Apple",OID:1}
@@ -8,10 +9,11 @@ GG.createElement("DDL",,{Function:"DDL",ID:"MyDDL",Drop:"DDLDrop"},{Background:"
 			 ,{Value:"Pear",OID:3}
 			 ,{Value:"Banana",OID:4}
 			 ,{Value:"Kitty &#x1F63C;",OID:5,Selected:1}]) ;OID is not necessary but if you want it to be something other than 1,2,3,4...etc you can set it, just don't reuse them
-GG.createElement("Button",,{Function:"Show"},,,"Show Values")
-GG.createElement("Button",,{Function:"Save"},,,"Save Edited")
+GG.createElement("Button",,{Function:"Show",Language:"Show"},,,"Show Values")
+GG.createElement("Button",,{Function:"Save",Language:"Save"},,,"Save Edited")
 GG.createElement("Button",,{Function:"Revert"},,,"Revert")
 GG.createElement("Button",,{Function:"Different",Menu:"Testing"},,,"Different Tree")
+GG.createElement("Button",,{Function:"Change_Language"},,,"Change Language")
 GG.createElement("Checkbox",,{ID:"Large",Function:"RefreshTree"},{"Font-Size":15,Color:"Yellow"},,"Large Tree")
 Div:=GG.createElement("Div",,,{Width:"100%",Height:"calc(50%)",Display:"Inline-Block"})
 GG.createElement("TreeView",Div,,{Width:300,Height:"100%",Float:"Left"},"MyTree")
@@ -31,6 +33,9 @@ GG.BuildBody2([{ID:{Type:"Text",Value:4,OID:1},Title:{Type:"Input",Style:"Width:
 GG.Tab()
 GG.Menus("Testing","<Menu><Item Name='First'><Item Name='Under First' Function='Under'/></Item><Item Name='Testing' Function='Testing'/></Menu>")
 GG.Show(,,1400,650)
+GG.SetCurrentLanguage("English")
+GG.SetScreen("Main")
+GG.UpdateLanguage()
 return
 Nifty(){
 	m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Nice")
@@ -49,6 +54,9 @@ mHTML()
 return
 1Escape(){
 	ExitApp
+}
+Change_Language(){
+	GG.SetCurrentLanguage(GG.CurrentLanguage="English"?"Jibberish":"English"),GG.UpdateLanguage()
 }
 ClickMe(){
 	m("You clicked me :)")
