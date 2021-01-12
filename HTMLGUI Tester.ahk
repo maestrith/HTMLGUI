@@ -17,7 +17,7 @@ GG.createElement("TreeView",Div,,{Width:300,Height:"100%",Float:"Left"},"MyTree"
 GG.createElement("ListView",Div,{Drop:"MyListDrop"},{Width:"calc(100% - 304px)",Height:"calc(100% + 2px)",Float:"Left"},"MyList")
 GG.SubFolderIndent:="0px"
 MG:=GG.createElement("MediaGrid",Div,{Drop:"ImageDrop"},{Width:"60%",Height:"calc(100% - 27px)",Float:"Left"},"MG")
-GG.createElement("Span",Div,,{"Font-Size":25},,"Media Grid:</BR>Arrow Keys change the Selection</BR>Space Toggles Selection</BR>Double Click to Select</BR>Shift+Click to Toggle Selection</BR>Control+Click to Toggle Selection")
+GG.createElement("Span",Div,,{"Font-Size":25},,"Media Grid:</BR>Arrow Keys change the Selection</BR>Space Toggles Selection</BR>Double Click to Select</BR>Shift+Click to Toggle Selection</BR>Control+Click to Toggle Selection</BR>Ctrl+A to Toggle the Selection for All Items</BR>Shift+(Left/Up/Right/Down) to Toggle Selection in that direction")
 Images:=[]
 Loop,Files,Images\*.bmp
 	Images.Push({SRC:A_LoopFileLongPath,OID:A_Index,Text:"Image: "(A_Index)})
@@ -29,7 +29,7 @@ GG.BuildBody2([{ID:{Type:"Text",Value:4,OID:1},Title:{Type:"Input",Style:"Width:
 		    ,{ID:{Type:"Text",Value:4,OID:2},Title:{Type:"Input",Value:"Fun",Menu:"Testing",Function:"That",OID:2},Things:{Type:"Text",Value:"Other things",Function:"ClickMe",Style:"Cursor:Hand",OID:2}}],"MyList")
 GG.Tab()
 GG.Menus("Testing","<Menu><Item Name='First'><Item Name='Under First' Function='Under'/></Item><Item Name='Testing' Function='Testing'/></Menu>")
-GG.Show(,,1002,652)
+GG.Show(,,1400,650)
 return
 Nifty(){
 	m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Nice")

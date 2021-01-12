@@ -360,7 +360,7 @@ Class HTMLGUI{
 			for a,b in HTML
 				New.AppendChild(Option:=this.Doc.createElement("Option")),Option.Value:=b.Value,Option.innerHTML:=b.Value,Option.setAttribute("OValue",b.Value),Option.setAttribute("OID",(b.OID?b.OID:A_Index)),Option.setAttribute("Style",(b.Style?b.Style:SSS)),(b.Selected)?Option.setAttribute("Selected"):""
 		}else if(Type="MediaGrid")
-			New:=this.createElement("Div",Parent),New.ID:=Text,MG:=this.MediaGrid[Text]:=New MediaGrid(this,Text,(Attributes.Border?Attributes.Border:8),Style)
+			New:=this.createElement("Div",Parent),New.ID:=Text,MG:=this.MediaGrid[Text]:=New this.MediaGridClass(this,Text,(Attributes.Border?Attributes.Border:8),Style)
 		else
 			New:=this.Doc.createElement(Type),(Parent?Parent:this.Doc.Body).AppendChild(New),(Text)?New.innerText:=Text:HTML?New.innerHTML:=HTML:""
 		for a,b in Attributes
@@ -930,181 +930,191 @@ Class HTMLGUI{
 		DllCall("GetClientRect",Ptr,HWND,Ptr,&Rect),W:=NumGet(Rect,8,"Int"),H:=NumGet(Rect,12,"Int"),Text:="X" X " Y" Y " W" W " H" H
 		return {X:X,Y:Y,W:W,H:H,Text:Text}
 	}
+	Class MediaGridClass{
+		__New(HGUI,DivID:="Grid",Border:=8,Options:=""){
+			for a,b in {Count:9,VideoBackground:"#CC00CC",Volume:.2}
+				this[a]:=(Options[a]?Options[a]:b)
+			for a,b in Options
+				this[a]:=b
+			this.HGUI:=HGUI,this.DivID:=DivID,this.Doc:=HGUI.Doc,HGUI.IG:=this,this.AddColor:=0x303030,this.Border:=Border,this.Div:=this.Doc.querySelector("#"(DivID)),this.Div.setAttribute("Type","MediaGrid"),this.Div.setAttribute("Class","Main"),this.Selected:=[],this.ChangeSel:=this.SetSelect.Bind(this)
+			for a,b in {OverAll:".Div{OverFlow:Hidden;Float:Left;Background-Color:"(HGUI.Background)";Text-Align:Center;Position:Relative;Border:6px Solid Grey;Border-Radius:6px} .Div:After{Content:'';Display:Inline-Block;Vertical-Align:Middle}"
+				 ,Division:".Div{Width:calc(33.333333`% - 16px);Height:calc(33.33333`% - 16px)}",DivAfter:"Img{Margin-Top:50`%;Margin-Bottom:Auto}",Labels:"Div[Type='MediaGrid'] Span{Display:Block;Text-Align:Center;Width:100%;Background-Color:"(this.HGUI.Background)";Bottom:0px;Font-Size:20px;Position:Absolute;Opacity:.7}"
+				 ,Focus:"Div[Type='MediaGrid']:Focus Span{Background:#303030}"}
+				this.createElement("Style",a).innerText:=b
+			this.SetStates()
+		}Click(Node){
+			this.NoCurrent(),Node:=this.GetDiv(Node),(GetKeyState("Shift")||GetKeyState("Ctrl"))?(Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected")):0,Node.setAttribute("Current"),this.Highlight()
+		}createElement(Type,ID:=""){
+			return New:=this.Doc.createElement(Type),this.Doc.Body.AppendChild(New),(ID?New.ID:=ID:"")
+		}CurrentMedia(){
+			return this.querySelector("Div[ID='"(this.DivID)"'] Div[Current]")
+		}DirectionHotkeys(Keys:=""){
+			Keys:=IsObject(Keys)?Keys:[]
+			for a,b in ["Left","Right","Up","Down"]
+				if(!Keys[b])
+					Keys[b]:=b
+			Hotkey,IfWinActive,% this.HGUI.ID
+			this.HotkeyDirections:=[],Dir:=this.DirectionBind
+			for a,b in Keys{
+				Hotkey,%a%,%Dir%,On
+				this.HotkeyDirections[a]:=b
+			}
+		}Directions(a*){
+			static Functions:=[]
+			Key:=(a.1&&!a.2?a.1:A_ThisHotkey)
+			if(!Node:=this.Div.querySelector("*[Current]"))
+				return (Node:=this.Div.querySelector("*[X='1'][Y='1']")).setAttribute("Current"),Node.Focus(),this.Highlight()
+			PN:=Node.querySelector("Video")
+			if(PN.SRC)
+				PN.Pause()
+			if(Node.ID!=this.DivID){
+				Fun:=this.HotkeyDirections[Key]
+				if(!Functions[Fun]&&IsFunc(Fun))
+					Functions[Fun]:=Func(Fun)
+				if(FF:=Functions[Fun])
+					FF.Call(Key)
+				return t("Function: " A_ThisFunc,"Label: " A_ThisLabel,"Line: " A_LineNumber,"HERE!",Node)
+			}if(NN:=Doc.querySelector("Div[ID='"(this.DivID)"'] Div[Selected]"))
+				NN.removeAttribute("Current")
+			if(a.1&&a.2){
+				(this.TestXY(a.1,a.2))?(X:=a.1,Y:=a.2):(X:=Y:=1),Node:=this.Doc.querySelector(Foo:="Div[ID='"(this.DivID)"'] Div[X='"(X)"'][Y='"(Y)"']")
+			}else if(!(X:=Node.getAttribute("X"))||!(Y:=Node.getAttribute("Y"))){
+				X:=Y:=1,Node:=this.Doc.querySelector(Foo:="Div[ID='"(this.DivID)"'] Div[X='"(X)"'][Y='"(Y)"']")
+			}else{
+				Node:=this.Doc.querySelector(Foo:="Div[ID='"(this.DivID)"'] Div[X='"(X)"'][Y='"(Y)"']").Style.Border:=(this.Border)"px Solid "(this.NoSelectedColor)
+				if(Key="Down")
+					Y:=(this.Doc.querySelector(Foo:="Div[ID='"(this.DivID)"'] Div[X='"(X)"'][Y='"(Y+1)"']")?Y+1:1)
+				else if(Key="Right"){
+					(this.TestXY(X+1,Y)?(X++):(Y<this.Y?(Y++,X:=1):(X:=1,Y:=1)))
+				}else if(Key="Up"){
+					if(this.Doc.querySelector(Foo:="Div[ID='"(this.DivID)"'] Div[X='"(X)"'][Y='"(Y-1)"']"))
+						Y:=Y-=1
+					else if((YY:=this.Y)>1){
+						while(!this.TestXY(X,YY))
+							YY--
+						Y:=YY
+					}
+				}else if(Key="Left"){
+					(this.TestXY(X-1,Y)?(X--):(Y>1?(Y--,X:=this.X):X:=""))
+					if(X=""){
+						Y:=this.Y,XX:=this.X
+						while(!this.TestXY(XX,Y))
+							XX--
+						X:=XX
+					}
+				}Node:=this.Doc.querySelector(Foo:="Div[ID='"(this.DivID)"'] Div[X='"(X)"'][Y='"(Y)"']")
+			}this.querySelector("Div[Current]").removeAttribute("Current"),Node.setAttribute("Current"),Node.Focus(),this.Highlight(),(PN:=Node.querySelector("Video")?PN.Play():0)
+		}DoubleClick(Node){
+			Node:=this.GetDiv(Node)
+			this.NoCurrent(),Node.setAttribute("Current"),(Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected")),this.Highlight()
+		}GetDiv(Node){
+			while(Node.nodeName!="Div"&&Node)
+				Node:=Node.parentNode
+			return Node
+		}GetSelected(Selected:=0){
+			All:=this.Doc.querySelectorAll("Div[ID='"(this.DivID)"'] Div"),Selected:=[]
+			while(aa:=All.Item[A_Index-1]){
+				if(aa.hasAttribute("Selected"))
+					Selected.Push(aa.getAttribute("OID"))
+			}
+			if(Selected.Count()=0&&!Selected){
+				if(OID:=this.Doc.querySelector(Foo:="Div[ID='"(this.DivID)"'] Div[Current]").getAttribute("OID"))
+					Selected.Push(OID)
+			}
+			return Selected
+		}Highlight(){
+			All:=this.Doc.querySelectorAll("Div[ID='"(this.DivID)"'] Div"),CC:="0x"(this.States.Normal),Sel:="0x"(this.States.Selected)
+			while(aa:=All.Item[A_Index-1]){
+				Current:=aa.hasAttribute("Current"),Selected:=aa.hasAttribute("Selected")
+				Obj:=this.Media[aa.getAttribute("OID")],State:=""
+				for a,b in this.States{
+					if(Obj[a]){
+						State:="0x"this.States[a]
+						Break
+					}
+				}
+				if(Selected)
+					aa.Style.Border:=(this.Border)"px Solid "("#"SubStr(Format("{:X}",(Selected?Sel:CC)+(Current?this.AddColor:0)),1,6))
+				else if(State)
+					aa.Style.Border:=(this.Border)"px Solid "("#"(Current?SubStr(Format("{:X}",State+0x303030),1,6):Format("{:X}",State)))
+				else
+					aa.Style.Border:=(this.Border)"px Solid "("#"SubStr(Format("{:X}",(Selected?Sel:CC)+(Current?this.AddColor:0)),1,6))
+			}
+		}NoCurrent(){
+			All:=this.Div.querySelectorAll("Div[Current]")
+			while(aa:=All.Item[A_Index-1])
+				aa.removeAttribute("Current")
+		}Populate(Media,Current:=1){
+			this.X:=Ceil(Sqrt(Media.Count())),this.Y:=Round(Sqrt(Media.Count())),this.Media:=[]
+			X:=Y:=1
+			for a,b in Media{
+				this.Media[b.OID]:=b
+				List.="<Div "(b.Current||A_Index=Current?"Current":"")" OID='"(b.OID)"' X='"(X)"' Y='"(Y)"' Class='Div' Type='MediaGrid' ID='"(this.DivID)"' Style='Border-Radius:"(this.Border)"px;Border:"(this.Border)"px Solid Grey;Float:Left'>"
+				List.="<Video OID='"(b.OID)"' X='"(X)"' Y='"(Y)"' ID='"(this.DivID)"' Type='MediaGrid' Style='Display:None;vertical-align: middle;Max-Width:100%;Max-Height:100%;Background:"(this.VideoBackground)"'></Video>"
+				List.="<Img OID='"(b.OID)"' X='"(X)"' Y='"(Y)"' ID='"(this.DivID)"' Type='MediaGrid' Style='vertical-align: middle;Max-Width:100%;Max-Height:100%'></Img>"
+				List.="<Span Type='MediaGrid' ID='"(this.DivID)"' X='"(X)"' Y='"(Y)"'>"(b.Text)"</Span></Div>"
+				X++,(X>this.X)?(X:=1,Y++):""
+			}this.querySelector("Div[ID='"(this.DivID)"']").innerHTML:=List
+			for a,b in Media{
+				Node:=this.querySelector(Foo:="Div[ID='"(this.DivID)"'] Div:nth-of-type("(A_Index)")")
+				(SubStr(b.SRC,-2)="mp4")?((Vid:=Node.querySelector("Video")).SRC:=b.SRC,Vid.Style.Display:="Inline-Block",Node.querySelector("Img").Style.Display:="None",Node.Style.Background:=this.VideoBackground,Node.querySelector("Video").Volume:=this.Volume):((Img:=Node.querySelector("Img")).SRC:=b.SRC,Img.Style.Display:="Inline-Block",Node.querySelector("Video").Style.Display:="None",Node.Style.Background:=this.HGUI.Background)
+			}this.querySelector("#Division").innerText:=".Div{Width:calc("(100/this.X)"% - "(this.Border*2)"px);Height:calc("(100/this.Y)"% - "(this.Border*2)"px)}",this.Highlight()
+		}querySelector(Query){
+			return this.Doc.querySelector(Query)
+		}querySelectorAll(Query){
+			return this.Doc.querySelectorAll(Query)
+		}RemoveMediaState(OID:=""){
+			this.querySelector((OID?"Div[OID='"(OID)"']":"Div[Current]")).removeAttribute("State"),this.Highlight()
+		}Select(a,b,c){
+			Node:=c.nodeName="Div"?c:c.parentNode
+			if(a="DoubleClick"){
+				if(Node.querySelector("Video").Style.Display="None")
+					return (Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected")),this.Highlight()
+				(Node:=Node.querySelector("Video")?((Node.Paused)?Node.Play():Node.Pause()):0)
+			}else if(a="Click"){
+				if(GetKeyState("Shift")||GetKeyState("Control"))
+					(Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected"))
+				else{
+					while(aa:=this.querySelectorAll("Div[ID='"(this.DivID)"'] Div").Item[A_Index-1])
+						aa.removeAttribute("Selected"),aa.removeAttribute("Current")
+					Node.setAttribute("Current")
+				}this.Highlight()
+		}}SelectHotkeys(Keys:=""){
+			Keys:=IsObject(Keys)?Keys:[]
+			for a,b in ["Space","+Left","+Up","+Right","+Down","^a"]
+				Keys[b]:=b
+			Hotkey,IfWinActive,% this.HGUI.ID
+			Sel:=this.ChangeSel,this.SelectionHotkeys:=[]
+			for a,b in Keys{
+				Hotkey,%a%,%Sel%,On
+				this.SelectionHotkeys[a]:=b
+		}}SetMediaState(State,OID:=""){
+			(State?(Node:=this.querySelector((OID?"Div[OID='"(OID)"']":"Div[Current]")),Node.setAttribute("State",State),this.Highlight()):0)
+		}SetStates(Colors:=""){
+			this.States:=[]
+			for a,b in {Selected:"AA0088",Normal:"CCCCCC"}
+				Color:=Trim(b,"#"),this.States[a]:=Color
+			for a,b in Colors
+				Color:=Trim(b,"#"),this.States[a]:=Color
+		}SetSelect(a*){
+			Node:=this.Div.querySelector("Div[Current]"),X:=Node.getAttribute("X"),Y:=Node.getAttribute("Y")
+			if((Key:=SubStr(A_ThisHotkey,2))="pace")
+				(Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected"))
+			else if(Key="a"){
+				while(aa:=this.Div.querySelectorAll("Div").Item[A_Index-1])
+					(aa.hasAttribute("Selected")?aa.removeAttribute("Selected"):aa.setAttribute("Selected"))
+			}else{
+				(Key="Left"?(Direction:="X",Add:=-1,Start:=X):(Key="Right")?(Direction:="X",Add:=1,Start:=X):(Key="Up")?(Direction:="Y",Add:=-1,Start:=Y):(Direction:="Y",Add:=1,Start:=Y))
+				while(Start<=this[Direction]&&Start>0)
+					Node:=this.Div.querySelector((Direction="X"?"Div[X='"(Start)"'][Y='"(Y)"']":"Div[X='"(X)"'][Y='"(Start)"']")),(Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected")),Start+=Add
+			}this.Highlight()
+		}Size(W:="",H:=""){
+			this.querySelector("#DivAfter").innerText:=".Div:After{Height:"((this.Div.offsetHeight/this.Y)-(this.Border*2)-2)"px}"
+		}TestXY(X,Y){
+			return this.querySelector(Foo:="Div[ID='"(this.DivID)"'] Div[X='"(X)"'][Y='"(Y)"']")
+		}
+	}
 }
 mHTML(HTML:=""){
 	m(Clipboard:=RegExReplace((HTML?HTML:GG.Doc.Body.outerHtml),"<","`n<"))
-}
-Class MediaGrid{
-	__New(HGUI,DivID:="Grid",Border:=8,Options:=""){
-		for a,b in {Count:9,VideoBackground:"#CC00CC",Volume:.2}
-			this[a]:=(Options[a]?Options[a]:b)
-		for a,b in Options
-			this[a]:=b
-		this.HGUI:=HGUI,this.DivID:=DivID,this.Doc:=HGUI.Doc,HGUI.IG:=this,this.AddColor:=0x303030,this.Border:=Border,this.Div:=this.Doc.querySelector("#"(DivID)),this.Div.setAttribute("Type","MediaGrid"),this.Div.setAttribute("Class","Main"),this.Selected:=[],this.ChangeSel:=this.SetSelect.Bind(this)
-		for a,b in {OverAll:".Div{OverFlow:Hidden;Float:Left;Background-Color:"(HGUI.Background)";Text-Align:Center;Position:Relative;Border:6px Solid Grey;Border-Radius:6px} .Div:After{Content:'';Display:Inline-Block;Vertical-Align:Middle}"
-				 ,Division:".Div{Width:calc(33.333333`% - 16px);Height:calc(33.33333`% - 16px)}",DivAfter:"Img{Margin-Top:50`%;Margin-Bottom:Auto}",Labels:"Div[Type='MediaGrid'] Span{Display:Block;Text-Align:Center;Width:100%;Background-Color:"(this.HGUI.Background)";Bottom:0px;Font-Size:20px;Position:Absolute;Opacity:.7}"
-				 ,Focus:"Div[Type='MediaGrid']:Focus Span{Background:#303030}"}
-			this.createElement("Style",a).innerText:=b
-		this.SetStates()
-	}Click(Node){
-		this.NoCurrent(),Node:=this.GetDiv(Node),(GetKeyState("Shift")||GetKeyState("Ctrl"))?(Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected")):0,Node.setAttribute("Current"),this.Highlight()
-	}createElement(Type,ID:=""){
-		return New:=this.Doc.createElement(Type),this.Doc.Body.AppendChild(New),(ID?New.ID:=ID:"")
-	}CurrentMedia(){
-		return this.querySelector("Div[ID='"(this.DivID)"'] Div[Current]")
-	}DirectionHotkeys(Keys:=""){
-		Keys:=IsObject(Keys)?Keys:[]
-		for a,b in ["Left","Right","Up","Down"]
-			if(!Keys[b])
-				Keys[b]:=b
-		Hotkey,IfWinActive,% this.HGUI.ID
-		this.HotkeyDirections:=[],Dir:=this.DirectionBind
-		for a,b in Keys{
-			Hotkey,%a%,%Dir%,On
-			this.HotkeyDirections[a]:=b
-		}
-	}Directions(a*){
-		static Functions:=[]
-		Key:=(a.1&&!a.2?a.1:A_ThisHotkey)
-		if(!Node:=this.Div.querySelector("*[Current]"))
-			return (Node:=this.Div.querySelector("*[X='1'][Y='1']")).setAttribute("Current"),Node.Focus(),this.Highlight()
-		PN:=Node.querySelector("Video")
-		if(PN.SRC)
-			PN.Pause()
-		if(Node.ID!=this.DivID){
-			Fun:=this.HotkeyDirections[Key]
-			if(!Functions[Fun]&&IsFunc(Fun))
-				Functions[Fun]:=Func(Fun)
-			if(FF:=Functions[Fun])
-				FF.Call(Key)
-			return t("Function: " A_ThisFunc,"Label: " A_ThisLabel,"Line: " A_LineNumber,"HERE!",Node)
-		}if(NN:=Doc.querySelector("Div[ID='"(this.DivID)"'] Div[Selected]"))
-			NN.removeAttribute("Current")
-		if(a.1&&a.2){
-			(this.TestXY(a.1,a.2))?(X:=a.1,Y:=a.2):(X:=Y:=1),Node:=this.Doc.querySelector(Foo:="Div[ID='"(this.DivID)"'] Div[X='"(X)"'][Y='"(Y)"']")
-		}else if(!(X:=Node.getAttribute("X"))||!(Y:=Node.getAttribute("Y"))){
-			X:=Y:=1,Node:=this.Doc.querySelector(Foo:="Div[ID='"(this.DivID)"'] Div[X='"(X)"'][Y='"(Y)"']")
-		}else{
-			Node:=this.Doc.querySelector(Foo:="Div[ID='"(this.DivID)"'] Div[X='"(X)"'][Y='"(Y)"']").Style.Border:=(this.Border)"px Solid "(this.NoSelectedColor)
-			if(Key="Down")
-				Y:=(this.Doc.querySelector(Foo:="Div[ID='"(this.DivID)"'] Div[X='"(X)"'][Y='"(Y+1)"']")?Y+1:1)
-			else if(Key="Right"){
-				(this.TestXY(X+1,Y)?(X++):(Y<this.Y?(Y++,X:=1):(X:=1,Y:=1)))
-			}else if(Key="Up"){
-				if(this.Doc.querySelector(Foo:="Div[ID='"(this.DivID)"'] Div[X='"(X)"'][Y='"(Y-1)"']"))
-					Y:=Y-=1
-				else if((YY:=this.Y)>1){
-					while(!this.TestXY(X,YY))
-						YY--
-					Y:=YY
-				}
-			}else if(Key="Left"){
-				(this.TestXY(X-1,Y)?(X--):(Y>1?(Y--,X:=this.X):X:=""))
-				if(X=""){
-					Y:=this.Y,XX:=this.X
-					while(!this.TestXY(XX,Y))
-						XX--
-					X:=XX
-				}
-			}Node:=this.Doc.querySelector(Foo:="Div[ID='"(this.DivID)"'] Div[X='"(X)"'][Y='"(Y)"']")
-		}this.querySelector("Div[Current]").removeAttribute("Current"),Node.setAttribute("Current"),Node.Focus(),this.Highlight(),(PN:=Node.querySelector("Video")?PN.Play():0)
-	}DoubleClick(Node){
-		Node:=this.GetDiv(Node)
-		this.NoCurrent(),Node.setAttribute("Current"),(Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected")),this.Highlight()
-	}GetDiv(Node){
-		while(Node.nodeName!="Div"&&Node)
-			Node:=Node.parentNode
-		return Node
-	}GetSelected(Selected:=0){
-		All:=this.Doc.querySelectorAll("Div[ID='"(this.DivID)"'] Div"),Selected:=[]
-		while(aa:=All.Item[A_Index-1]){
-			if(aa.hasAttribute("Selected"))
-				Selected.Push(aa.getAttribute("OID"))
-		}
-		if(Selected.Count()=0&&!Selected){
-			if(OID:=this.Doc.querySelector(Foo:="Div[ID='"(this.DivID)"'] Div[Current]").getAttribute("OID"))
-				Selected.Push(OID)
-		}
-		return Selected
-	}Highlight(){
-		All:=this.Doc.querySelectorAll("Div[ID='"(this.DivID)"'] Div"),CC:="0x"(this.States.Normal),Sel:="0x"(this.States.Selected)
-		while(aa:=All.Item[A_Index-1]){
-			Current:=aa.hasAttribute("Current"),Selected:=aa.hasAttribute("Selected")
-			Obj:=this.Media[aa.getAttribute("OID")],State:=""
-			for a,b in this.States{
-				if(Obj[a]){
-					State:="0x"this.States[a]
-					Break
-				}
-			}
-			if(Selected)
-				aa.Style.Border:=(this.Border)"px Solid "("#"SubStr(Format("{:X}",(Selected?Sel:CC)+(Current?this.AddColor:0)),1,6))
-			else if(State)
-				aa.Style.Border:=(this.Border)"px Solid "("#"(Current?SubStr(Format("{:X}",State+0x303030),1,6):Format("{:X}",State)))
-			else
-				aa.Style.Border:=(this.Border)"px Solid "("#"SubStr(Format("{:X}",(Selected?Sel:CC)+(Current?this.AddColor:0)),1,6))
-		}
-	}NoCurrent(){
-		All:=this.Div.querySelectorAll("Div[Current]")
-		while(aa:=All.Item[A_Index-1])
-			aa.removeAttribute("Current")
-	}Populate(Media,Current:=1){
-		this.X:=Ceil(Sqrt(Media.Count())),this.Y:=Round(Sqrt(Media.Count())),this.Media:=[]
-		X:=Y:=1
-		for a,b in Media{
-			this.Media[b.OID]:=b
-			List.="<Div "(b.Current||A_Index=Current?"Current":"")" OID='"(b.OID)"' X='"(X)"' Y='"(Y)"' Class='Div' Type='MediaGrid' ID='"(this.DivID)"' Style='Border-Radius:"(this.Border)"px;Border:"(this.Border)"px Solid Grey;Float:Left'>"
-			List.="<Video OID='"(b.OID)"' X='"(X)"' Y='"(Y)"' ID='"(this.DivID)"' Type='MediaGrid' Style='Display:None;vertical-align: middle;Max-Width:100%;Max-Height:100%;Background:"(this.VideoBackground)"'></Video>"
-			List.="<Img OID='"(b.OID)"' X='"(X)"' Y='"(Y)"' ID='"(this.DivID)"' Type='MediaGrid' Style='vertical-align: middle;Max-Width:100%;Max-Height:100%'></Img>"
-			List.="<Span Type='MediaGrid' ID='"(this.DivID)"' X='"(X)"' Y='"(Y)"'>"(b.Text)"</Span></Div>"
-			X++,(X>this.X)?(X:=1,Y++):""
-		}this.querySelector("Div[ID='"(this.DivID)"']").innerHTML:=List
-		for a,b in Media{
-			Node:=this.querySelector(Foo:="Div[ID='"(this.DivID)"'] Div:nth-of-type("(A_Index)")")
-			(SubStr(b.SRC,-2)="mp4")?((Vid:=Node.querySelector("Video")).SRC:=b.SRC,Vid.Style.Display:="Inline-Block",Node.querySelector("Img").Style.Display:="None",Node.Style.Background:=this.VideoBackground,Node.querySelector("Video").Volume:=this.Volume):((Img:=Node.querySelector("Img")).SRC:=b.SRC,Img.Style.Display:="Inline-Block",Node.querySelector("Video").Style.Display:="None",Node.Style.Background:=this.HGUI.Background)
-		}this.querySelector("#Division").innerText:=".Div{Width:calc("(100/this.X)"% - "(this.Border*2)"px);Height:calc("(100/this.Y)"% - "(this.Border*2)"px)}",this.Highlight()
-	}querySelector(Query){
-		return this.Doc.querySelector(Query)
-	}querySelectorAll(Query){
-		return this.Doc.querySelectorAll(Query)
-	}RemoveMediaState(OID:=""){
-		this.querySelector((OID?"Div[OID='"(OID)"']":"Div[Current]")).removeAttribute("State"),this.Highlight()
-	}Select(a,b,c){
-		Node:=c.nodeName="Div"?c:c.parentNode
-		if(a="DoubleClick"){
-			if(Node.querySelector("Video").Style.Display="None")
-				return (Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected")),this.Highlight()
-			(Node:=Node.querySelector("Video")?((Node.Paused)?Node.Play():Node.Pause()):0)
-		}else if(a="Click"){
-			if(GetKeyState("Shift")||GetKeyState("Control"))
-				(Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected"))
-			else{
-				while(aa:=this.querySelectorAll("Div[ID='"(this.DivID)"'] Div").Item[A_Index-1])
-					aa.removeAttribute("Selected"),aa.removeAttribute("Current")
-				Node.setAttribute("Current")
-			}this.Highlight()
-	}}SelectHotkeys(Keys:=""){
-		Keys:=IsObject(Keys)?Keys:[]
-		for a,b in ["Space"]
-			Keys[b]:=b
-		Hotkey,IfWinActive,% this.HGUI.ID
-		Sel:=this.ChangeSel,this.SelectionHotkeys:=[]
-		for a,b in Keys{
-			Hotkey,%a%,%Sel%,On
-			this.SelectionHotkeys[a]:=b
-	}}SetMediaState(State,OID:=""){
-		(State?(Node:=this.querySelector((OID?"Div[OID='"(OID)"']":"Div[Current]")),Node.setAttribute("State",State),this.Highlight()):0)
-	}SetStates(Colors:=""){
-		this.States:=[]
-		for a,b in {Selected:"AA0088",Normal:"CCCCCC"}
-			Color:=Trim(b,"#"),this.States[a]:=Color
-		for a,b in Colors
-			Color:=Trim(b,"#"),this.States[a]:=Color
-	}SetSelect(a*){
-		Node:=this.querySelector("Div[Current]"),(Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected")),this.Highlight()
-	}Size(W:="",H:=""){
-		this.querySelector("#DivAfter").innerText:=".Div:After{Height:"((this.Div.offsetHeight/this.Y)-(this.Border*2)-2)"px}"
-	}TestXY(X,Y){
-		return this.querySelector(Foo:="Div[ID='"(this.DivID)"'] Div[X='"(X)"'][Y='"(Y)"']")
-	}
 }
