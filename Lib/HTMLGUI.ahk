@@ -17,7 +17,14 @@ Class HTMLGUI{
 		Node:=Event.SrcElement,Ident:=Node.getAttribute("Ident")
 		;~ t("Function: " A_ThisFunc,"Label: " A_ThisLabel,"Line: " A_LineNumber,"HERE!",Name,SubStr(Node.outerHTML,1,500))
 		if(Name="Mouse"){
-			if(Menu:=Node.getAttribute("Menu"))
+			if(Function:=Node.getAttribute("Right_Click")){
+				Event.preventDefault()
+				if(IsLabel(Function))
+					SetTimer,%Function%,-1
+				return Func(Function).Call("RightClick",Value,Node,Obj.Which)
+			}if(Menu:=Node.getAttribute("Menu"))
+				return Event.preventDefault(),this.Menu(Menu)
+			else if(Menu:=this.GetDiv(Node).getAttribute("Menu"))
 				return Event.preventDefault(),this.Menu(Menu)
 			else if(Menu:=this.GetControl(Node).getAttribute("Menu"))
 				return Event.preventDefault(),this.Menu(Menu)
@@ -193,26 +200,31 @@ Class HTMLGUI{
 		}else
 			return BodyHTML
 	}BuildBody2(Data,ListView){
+		static Atts:=["Menu","Drop","Function","ListView","Lookup","IgnoreState"]
 		New:=this.Data[ListView]:=[]
 		for a,b in Data{
 			Total.="<TR ListView='"(ListView)"'>"
 			ID:=New.Push(OO:=[])
 			for c,d in this.Columns[ListView]{
-				Info:=b[d.ID],Value:=Info.Value?Info.Value:Info.Name,Function:=Info.Function,OO[d.ID]:=(Info.Type="Checkbox"?(b[d.ID]?-1:0):Value),OO.OID:=Info.OID,Style:=Info.Style,ID:=Info.ID?Info.ID:d.ID,Type:=Info.Type?Info.Type:d.Type
+				Info:=b[d.ID],Value:=Info.Value?Info.Value:Info.Name,Function:=Info.Function,OO[d.ID]:=(Info.Type="Checkbox"?(b[d.ID]?-1:0):Value),OO.OID:=Info.OID,Style:=Info.Style,ID:=Info.ID?Info.ID:d.ID,Type:=Info.Type?Info.Type:d.Type,AllItems:=""
+				for c,d in Atts
+					if(VVal:=Info[d])
+						AllItems.=(d)"='"(VVal)"' "
+				AllItems.="ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' Style='"(Style)"'"
 				if(Type="Text")
-					Total.=Foo:="<TD Menu='"(Info.Menu)"' Drop='"(Info.Drop)"' Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' "(Style?"Style='"(Style)"'":"")"><Div Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' Style='Flex-Wrap:NoWrap;Display:Flex;"(d.Style)"'><Span Language='"(Info.Language)"' Menu='"(Info.Menu)"' Drop='"(Info.Drop)"' Function='"(Function)"' ListView='"(ListView)"' Lookup='"(Info.Lookup)"' OID='"(Info.OID)"' ID='"(ID)"' Value='"this.cleanHTML(Value)"' Style='"(d.Style)"'>"(Value)"</Span>"this.BuildExtra(d.Extra,Info.OID)"</Div></TD>"
+					Total.=Foo:="<TD "(AllItems)" "(Style?"Style='"(Style)"'":"")"><Div "(AllItems)" Style='Flex-Wrap:NoWrap;Display:Flex;"(d.Style)"'><Span "(AllItems)" Language='"(Info.Language)"' Value='"this.cleanHTML(Value)"' Style='"(d.Style)"'>"(Value)"</Span>"this.BuildExtra(d.Extra,Info.OID)"</Div></TD>"
 				else if(Type="Button")
-					Total.=Foo:="<TD Menu='"(Info.Menu)"' Drop='"(Info.Drop)"' Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' "(Style?"Style='"(Style)"'":"")"><Div Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' Style='Flex-Wrap:NoWrap;Display:Flex;"(d.Style)"'><Button Language='"(Info.Language)"' Menu='"(Info.Menu)"' Drop='"(Info.Drop)"' Function='"(Function)"' ListView='"(ListView)"' Lookup='"(Info.Lookup)"' OID='"(Info.OID)"' ID='"(ID)"' Value='"this.cleanHTML(Value)"' Style='"(d.Style)"'>"(Value)this.BuildExtra(d.Extra,Info.OID)"</Div></TD>"
+					Total.=Foo:="<TD "(AllItems)" "(Style?"Style='"(Style)"'":"")"><Div "(AllItems)" Style='Flex-Wrap:NoWrap;Display:Flex;"(d.Style)"'><Button "(AllItems)" Value='"this.cleanHTML(Value)"' Style='"(d.Style)"'>"(Value)this.BuildExtra(d.Extra,Info.OID)"</Div></TD>"
 				else if(type="Checkbox")
-					Total.=Foo:="<TD Menu='"(Info.Menu)"' Drop='"(Info.Drop)"' Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' "(Style?"Style='"(Style)"'":"")"><Div Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' Style='Flex-Wrap:NoWrap;Display:Flex;"(d.Style)"'><Input Language='"(Info.Language)"' Menu='"(Info.Menu)"' Drop='"(Info.Drop)"' Type='Checkbox' Function='"(Function)"' ListView='"(ListView)"' Lookup='"(Info.Lookup)"' OID='"(Info.OID)"' ID='"(ID)"' Value='"this.cleanHTML(Value)"' "(Info.Checked?" Checked ":"")" Style='"(d.Style)"'><Label Language='"(Info.Language)"'>"(Value)(this.BuildExtra(d.Extra,Info.OID))"</Label></Div></TD>"
-				else if(Type="Input")
-					Total.=Foo:="<TD Menu='"(Info.Menu)"' ListView='"(ListView)"' Drop='"(Info.Drop)"' OID='"(Info.OID)"' ID='"(ID)"'><Input Language='"(Info.Language)"' Menu='"(Info.Menu)"' Drop='"(Info.Drop)"' IgnoreState='"(Info.IgnoreState)"' ListView='"(ListView)"' OID='"(Info.OID)"' Function='"(Function)"' ID='"(ID)"' Value='"this.cleanHTML(Value)"' Type='Text' Lookup='"(Info.Lookup)"' oninput='OnInput(event)'"(Style?" Style='"(Style)"'":"")"></Input>"this.BuildExtra(d.Extra,Info.OID)"</TD>"
-				else if(Type="Password")
-					Total.=Foo:="<TD Menu='"(Info.Menu)"' ListView='"(ListView)"' Drop='"(Info.Drop)"' OID='"(Info.OID)"' ID='"(ID)"'><Input Language='"(Info.Language)"' Menu='"(Info.Menu)"' Drop='"(Info.Drop)"' IgnoreState='"(Info.IgnoreState)"' Type='Password' ListView='"(ListView)"' OID='"(Info.OID)"' Function='"(Function)"' ID='"(ID)"' Value='"this.cleanHTML(Value)"' Type='Text' Lookup='"(Info.Lookup)"' oninput='OnInput(event)'"(Style?" Style='"(Style)"'":"")"></Input>"this.BuildExtra(d.Extra,Info.OID)"</TD>"
+					Total.=Foo:="<TD "(AllItems)" "(Style?"Style='"(Style)"'":"")"><Div "(AllItems)" Style='Flex-Wrap:NoWrap;Display:Flex;"(d.Style)"'><Input "(AllItems)" Type='Checkbox' Value='"this.cleanHTML(Value)"' "(Info.Checked?" Checked ":"")" Style='"(d.Style)"'><Label "(AllItems)" Language='"(Info.Language)"'>"(Value)(this.BuildExtra(d.Extra,Info.OID))"</Label></Div></TD>"
+				else if(Type="Input"){
+					Total.=Foo:="<TD "(AllItems)"><Input "(AllItems)" Language='"(Info.Language)"' Value='"this.cleanHTML(Value)"' oninput='OnInput(event)'></Input>"this.BuildExtra(d.Extra,Info.OID)"</TD>"
+				}else if(Type="Password")
+					Total.=Foo:="<TD "(AllItems)"><Input "(AllItems)" Type='Password' Value='"this.cleanHTML(Value)"' oninput='OnInput(event)'></Input>"this.BuildExtra(d.Extra,Info.OID)"</TD>"
 				else if(Type="Date")
-					Total.="<TD Menu='"(Info.Menu)"' ListView='"(ListView)"' Drop='"(Info.Drop)"' OID='"(Info.OID)"' ID='"(ID)"' "(Style?"Style='"(Style)"'":"")"><Span Language='"(Info.Language)"' Menu='"(Info.Menu)"' ListView='"(ListView)"' Type='Date' Lookup='"(Info.Lookup)"' Function='"(Function)"' ID='"(ID)"' OID='"(Info.OID)"' Value='"this.cleanHTML(Value)"' Style='Cursor:Hand;Color:#3333FF' "(d.IgnoreState?"IgnoreState='1'":"")">"(Value)"</Span></TD>"
+					Total.="<TD "(AllItems)"><Span Language='"(Info.Language)"' Type='Date' Value='"this.cleanHTML(Value)"' Style='Cursor:Hand;Color:#3333FF' "(d.IgnoreState?"IgnoreState='1'":"")">"(Value)"</Span></TD>"
 				else if(Type="DDL"){
-					Item:="<Select Language='"(Info.Language)"' Menu='"(Info.Menu)"' Drop='"(Info.Drop)"' IgnoreState='"(Info.IgnoreState)"' Value='"this.cleanHTML(Value)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' Label='" d.Label "' onchange='OnInput(Event)' Lookup='"(Info.Lookup)"' Column='" Column++ "' " AddAtt ""(b[d.ID].Style?" Style='"(b[d.ID].Style)"'":"")">"
+					Item:="<Select "(AllItems)" Value='"this.cleanHTML(Value)"' onchange='OnInput(Event)' Column='" Column++ "' " AddAtt ""(b[d.ID].Style?" Style='"(b[d.ID].Style)"'":"")">"
 					for e,f in b.Value.DDL
 						Item.="<Option OID='"(f.OID)"' Value='"this.cleanHTML(f.Name)"' OValue='"this.cleanHTML(f.Name)"' "(f.Style?"Style='"(f.Style)"'":"")" "(f.Selected?" selected='selected'":"")">"(f.Name)"</Option>"
 					Total.=Foo:="<TD OID='"(b.OID)"' ID='" b.Equipment "_Condition' oninput='OnInput(Event)' Value='"this.cleanHTML(d.Text)"'><Div Style='Flex-Wrap:NoWrap;Display:Flex'>" Item "</Select>"this.BuildExtra(d.Extra,b.OID)"</Div></TD>"
@@ -220,7 +232,6 @@ Class HTMLGUI{
 					Total.=Foo:=Func((Type)"_Column").Call(b,Info,Listview)
 				else
 					this.m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Build for type |"(Type)"|","",Info)
-				;~ m("Function: " A_ThisFunc,"Line: " A_LineNumber,"",c,d)
 			}
 			Total.="</TR>"
 		}
@@ -251,7 +262,7 @@ Class HTMLGUI{
 		if(Build){
 			Second:=Head:="<Table Name='"(ListView)"'><THead Class='FixedHeader'><TR Class='Header'>"
 			for a,b in this.Columns[ListView]
-				Spans.="<TH><Span Class='Header' Language='"(b.Language)"' ListView='"(ListView)"' Function='SortHDR' OText='"(b.ID)"' ID='"(b.ID)"'>"(b.Name)"</Span></TH>",Second.="<TH>"(b.Name)"</TH>"
+				Spans.="<TH><Span Menu='"(b.Menu)"' Class='Header' Language='"(b.Language)"' ListView='"(ListView)"' Function='"(b.Function?b.Function:"SortHDR")"' OText='"(b.ID)"' ID='"(b.ID)"'>"(b.Name)"</Span></TH>",Second.="<TH>"(b.Name)"</TH>"
 			Head.="</TR></thead></Table>",Second.="</TR></THead><TBody></TBody>",Header.innerHTML:=Head,Header.querySelector("TR").innerHTML:=Spans,Body.innerHTML:=Second,ComObjError(0)
 			if(!this.SelectedCSS[ListView])
 				this.SelectedCSS[ListView]:=this.createElement("Style")
@@ -583,6 +594,10 @@ Class HTMLGUI{
 				Node:=Node.parentNode
 		}
 		return Node
+	}GetDiv(Node){
+		while(Node.nodeName!="Div"&&Node)
+			Node:=Node.parentNode
+		return Node
 	}GetFunc(Function){
 		if(Fun:=this.FunctionObj[Function])
 			return Fun
@@ -903,7 +918,7 @@ Class HTMLGUI{
 	}UpdateLanguage(){
 		while(aa:=this.QuerySelectorAll("*[Language]").Item[A_Index-1])
 			if(Language:=aa.getAttribute("Language"))
-				(Node:=aa.querySelector("Span[ID='Label']"))?Node.innerHTML:=this.LanguageObj[this.CurrentScreen,Language,this.CurrentLanguage]:aa.innerHTML:=this.LanguageObj[this.CurrentScreen,Language,this.CurrentLanguage]
+				(Node:=aa.querySelector("Span[ID='Label']"))?Node.innerHTML:=this.LanguageObj[this.CurrentScreen,Language,this.CurrentLanguage]:aa.nodeName="Input"?"":aa.innerHTML:=this.LanguageObj[this.CurrentScreen,Language,this.CurrentLanguage]
 	}Values(){
 		All:=GG.querySelectorAll("Input,Select"),Values:=[]
 		while(aa:=All.Item[A_Index-1]){
@@ -1048,7 +1063,7 @@ Class HTMLGUI{
 			X:=Y:=1
 			for a,b in Media{
 				this.Media[b.OID]:=b
-				List.="<Div "(b.Current||A_Index=Current?"Current":"")" OID='"(b.OID)"' X='"(X)"' Y='"(Y)"' Class='Div' Type='MediaGrid' ID='"(this.DivID)"' Style='Border-Radius:"(this.Border)"px;Border:"(this.Border)"px Solid Grey;Float:Left'>"
+				List.="<Div Menu='"(b.Menu)"' "(b.Current||A_Index=Current?"Current":"")" OID='"(b.OID)"' X='"(X)"' Y='"(Y)"' Class='Div' Type='MediaGrid' ID='"(this.DivID)"' Style='Border-Radius:"(this.Border)"px;Border:"(this.Border)"px Solid Grey;Float:Left'>"
 				List.="<Video OID='"(b.OID)"' X='"(X)"' Y='"(Y)"' ID='"(this.DivID)"' Type='MediaGrid' Style='Display:None;vertical-align: middle;Max-Width:100%;Max-Height:100%;Background:"(this.VideoBackground)"'></Video>"
 				List.="<Img OID='"(b.OID)"' X='"(X)"' Y='"(Y)"' ID='"(this.DivID)"' Type='MediaGrid' Style='vertical-align: middle;Max-Width:100%;Max-Height:100%'></Img>"
 				List.="<Span Type='MediaGrid' Language='"(b.Language)"' ID='"(this.DivID)"' X='"(X)"' Y='"(Y)"'>"(b.Text)"</Span></Div>"

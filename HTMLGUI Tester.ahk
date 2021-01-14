@@ -9,7 +9,7 @@ GG.createElement("DDL",,{Function:"DDL",ID:"MyDDL",Drop:"DDLDrop"},{Background:"
 			 ,{Value:"Pear",OID:3,Language:3}
 			 ,{Value:"Banana",OID:4,Language:4}
 			 ,{Value:"Kitty &#x1F63C;",OID:5,Language:5,Selected:1}]) ;OID is not necessary but if you want it to be something other than 1,2,3,4...etc you can set it, just don't reuse them
-GG.createElement("Button",,{Function:"Show",Language:"Show"},,,"Show Values")
+GG.createElement("Button",,{Function:"Show",Language:"Show",Right_Click:"Right"},,,"Show Values")
 GG.createElement("Button",,{Function:"Save",Language:"Save"},,,"Save Edited")
 GG.createElement("Button",,{Function:"Revert",Language:6},,,"Revert")
 GG.createElement("Button",,{Function:"Different",Menu:"Testing",Language:7},,,"Different Tree")
@@ -23,11 +23,11 @@ MG:=GG.createElement("MediaGrid",Div,{Drop:"ImageDrop",AutoPlay:1},{Width:"60%",
 GG.createElement("Span",Div,{Language:10},{"Font-Size":25},,"Media Grid:</BR>Arrow Keys change the Selection</BR>Space Toggles Selection</BR>Double Click to Select</BR>Shift+Click to Toggle Selection</BR>Control+Click to Toggle Selection</BR>Ctrl+A to Toggle the Selection for All Items</BR>Shift+(Left/Up/Right/Down) to Toggle Selection in that direction</BR>P to Play/Pause Media")
 Images:=[]
 Loop,Files,Images\*.*
-	Images.Push({SRC:A_LoopFileLongPath,OID:A_Index,Text:"Image: "(A_Index),Language:200+A_Index})
+	Images.Push({SRC:A_LoopFileLongPath,OID:A_Index,Text:"Image: "(A_Index),Language:200+A_Index,Menu:(A_LoopFileExt="mp4"?"Testing":"")})
 MG.Populate(Images)
 MG.SelectHotkeys({"!a":"Select_All"})
 Different()
-GG.BuildLV("MyList",[{ID:"ID",Name:"ID Name",Language:"Header1"},{ID:"Title",Name:"The Title",Language:"Header2"},{ID:"Things",Name:"More Things",Language:"Header3"}])
+GG.BuildLV("MyList",[{ID:"ID",Name:"ID Name",Menu:"Testing",Language:"Header1"},{ID:"Title",Name:"The Title",Language:"Header2"},{ID:"Things",Name:"More Things",Language:"Header3"}])
 GG.BuildBody2([{ID:{Type:"Text",Value:4,OID:1,Language:11},Title:{Type:"Input",Language:12,Style:"Width:90%;Color:Pink",Value:"Neat",Drop:"Woot",IgnoreState:1,Function:"This",OID:1},Things:{Type:"Checkbox",Language:13,Checked:1,Value:"LOL",OID:1}}
 		    ,{ID:{Type:"Text",Value:4,OID:2,Language:14},Title:{Type:"Input",Language:15,Value:"Fun",Menu:"Testing",Function:"That",OID:2},Things:{Type:"Text",Language:16,Value:"Other things",Function:"ClickMe",Style:"Cursor:Hand",OID:2}}],"MyList")
 GG.Tab()
@@ -138,6 +138,12 @@ RefreshTree(){
 }
 Revert(){
 	GG.Revert()
+}
+Right(Action,Value,Element){
+	m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Here!",Action,Value,Element)
+}
+SortHDR(Action,ColumnName,Element){
+	m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Here!",Action,ColumnName,Element)
 }
 Show(){
 	Values:=GG.Values()
