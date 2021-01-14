@@ -940,12 +940,10 @@ Class HTMLGUI{
 			for a,b in {OverAll:".Div{OverFlow:Hidden;Float:Left;Background-Color:"(HGUI.Background)";Text-Align:Center;Position:Relative;Border:6px Solid Grey;Border-Radius:6px} .Div:After{Content:'';Display:Inline-Block;Vertical-Align:Middle}"
 				 ,Division:".Div{Width:calc(33.333333`% - 16px);Height:calc(33.33333`% - 16px)}",DivAfter:"Img{Margin-Top:50`%;Margin-Bottom:Auto}",Labels:"Div[Type='MediaGrid'] Span{Display:Block;Text-Align:Center;Width:100%;Background-Color:"(this.HGUI.Background)";Bottom:0px;Font-Size:20px;Position:Absolute;Opacity:.7}"
 				 ,Focus:"Div[Type='MediaGrid']:Focus Span{Background:#303030}"}
-				this.createElement("Style",a).innerText:=b
+				this.cElement("Style",a).innerText:=b
 			this.SetStates()
 		}Click(Node){
 			this.NoCurrent(),Node:=this.GetDiv(Node),(GetKeyState("Shift")||GetKeyState("Ctrl"))?(Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected")):0,Node.setAttribute("Current"),this.Highlight()
-		}createElement(Type,ID:=""){
-			return New:=this.Doc.createElement(Type),this.Doc.Body.AppendChild(New),(ID?New.ID:=ID:"")
 		}CurrentMedia(){
 			return this.querySelector("Div[ID='"(this.DivID)"'] Div[Current]")
 		}DirectionHotkeys(Keys:=""){
