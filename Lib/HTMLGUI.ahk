@@ -944,6 +944,8 @@ Class HTMLGUI{
 			this.SetStates()
 		}Click(Node){
 			this.NoCurrent(),Node:=this.GetDiv(Node),(GetKeyState("Shift")||GetKeyState("Ctrl"))?(Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected")):0,Node.setAttribute("Current"),this.Highlight()
+		}cElement(Type,ID:=""){
+			return New:=this.Doc.createElement(Type),this.Doc.Body.AppendChild(New),(ID?New.ID:=ID:"")
 		}CurrentMedia(){
 			return this.querySelector("Div[ID='"(this.DivID)"'] Div[Current]")
 		}DirectionHotkeys(Keys:=""){

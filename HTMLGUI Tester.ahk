@@ -188,3 +188,5 @@ Woot(Files){
 	m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Here!",Files)
 }
 #Include <HTMLGUI>
+#Include <t>
+#Include <Obj2String>
