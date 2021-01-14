@@ -50,3 +50,14 @@ GG.createElement("DDL",Parent,{Function:"DDL",ID:"MyDDL",Drop:"DDLDrop"},{Backgr
     * Value: The Text for the DDL Item
     * OID: The ID of the DDL Item
     * Language: If you want to setup multiple Languages for your GUI set this to the Name you want to associate to the translation (Discussed Below)
+`GG.Show(X,Y,Width,Height)`
+* X:
+  * Can be left blank to just be Centered Horizontally
+  * Pass it an Integer offset it from the Left of the screen
+  * Can be an HWND of a Window that you want it to be Centered within (Like a centered Pop-Up Window)
+* Y:
+  * Can be left blank to just be Centered Vertically
+  * Pass it an Integer offset it from the Top of the screen
+  * Can be an HWND of a Window that you want it to be Centered within (Like a centered Pop-Up Window)
+* Width: The Width of the new GUI
+* Height: The Height of the new GUI
