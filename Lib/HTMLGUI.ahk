@@ -202,9 +202,9 @@ Class HTMLGUI{
 				if(Type="Text")
 					Total.=Foo:="<TD Menu='"(Info.Menu)"' Drop='"(Info.Drop)"' Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' "(Style?"Style='"(Style)"'":"")"><Div Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' Style='Flex-Wrap:NoWrap;Display:Flex;"(d.Style)"'><Span Language='"(Info.Language)"' Menu='"(Info.Menu)"' Drop='"(Info.Drop)"' Function='"(Function)"' ListView='"(ListView)"' Lookup='"(Info.Lookup)"' OID='"(Info.OID)"' ID='"(ID)"' Value='"this.cleanHTML(Value)"' Style='"(d.Style)"'>"(Value)"</Span>"this.BuildExtra(d.Extra,Info.OID)"</Div></TD>"
 				else if(Type="Button")
-					Total.=Foo:="<TD Menu='"(Info.Menu)"' Drop='"(Info.Drop)"' Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' "(Style?"Style='"(Style)"'":"")"><Div Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' Style='Flex-Wrap:NoWrap;Display:Flex;"(d.Style)"'><Button Language='"(Info.Language)"' Menu='"(Info.Menu)"' Drop='"(Info.Drop)"' Function='"(Function)"' ListView='"(ListView)"' Lookup='"(Info.Lookup)"' OID='"(Info.OID)"' ID='"(ID)"' Value='"this.cleanHTML(Value)"' Style='"(d.Style)"'>"(Value)"</Span>"this.BuildExtra(d.Extra,Info.OID)"</Div></TD>"
+					Total.=Foo:="<TD Menu='"(Info.Menu)"' Drop='"(Info.Drop)"' Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' "(Style?"Style='"(Style)"'":"")"><Div Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' Style='Flex-Wrap:NoWrap;Display:Flex;"(d.Style)"'><Button Language='"(Info.Language)"' Menu='"(Info.Menu)"' Drop='"(Info.Drop)"' Function='"(Function)"' ListView='"(ListView)"' Lookup='"(Info.Lookup)"' OID='"(Info.OID)"' ID='"(ID)"' Value='"this.cleanHTML(Value)"' Style='"(d.Style)"'>"(Value)this.BuildExtra(d.Extra,Info.OID)"</Div></TD>"
 				else if(type="Checkbox")
-					Total.=Foo:="<TD Menu='"(Info.Menu)"' Drop='"(Info.Drop)"' Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' "(Style?"Style='"(Style)"'":"")"><Div Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' Style='Flex-Wrap:NoWrap;Display:Flex;"(d.Style)"'><Input Language='"(Info.Language)"' Menu='"(Info.Menu)"' Drop='"(Info.Drop)"' Type='Checkbox' Function='"(Function)"' ListView='"(ListView)"' Lookup='"(Info.Lookup)"' OID='"(Info.OID)"' ID='"(ID)"' Value='"this.cleanHTML(Value)"' "(Info.Checked?" Checked ":"")" Style='"(d.Style)"'>"(Value)"</Span>"this.BuildExtra(d.Extra,Info.OID)"</Div></TD>"
+					Total.=Foo:="<TD Menu='"(Info.Menu)"' Drop='"(Info.Drop)"' Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' "(Style?"Style='"(Style)"'":"")"><Div Function='"(Function)"' ListView='"(ListView)"' OID='"(Info.OID)"' ID='"(ID)"' Style='Flex-Wrap:NoWrap;Display:Flex;"(d.Style)"'><Input Language='"(Info.Language)"' Menu='"(Info.Menu)"' Drop='"(Info.Drop)"' Type='Checkbox' Function='"(Function)"' ListView='"(ListView)"' Lookup='"(Info.Lookup)"' OID='"(Info.OID)"' ID='"(ID)"' Value='"this.cleanHTML(Value)"' "(Info.Checked?" Checked ":"")" Style='"(d.Style)"'><Label Language='"(Info.Language)"'>"(Value)(this.BuildExtra(d.Extra,Info.OID))"</Label></Div></TD>"
 				else if(Type="Input")
 					Total.=Foo:="<TD Menu='"(Info.Menu)"' ListView='"(ListView)"' Drop='"(Info.Drop)"' OID='"(Info.OID)"' ID='"(ID)"'><Input Language='"(Info.Language)"' Menu='"(Info.Menu)"' Drop='"(Info.Drop)"' IgnoreState='"(Info.IgnoreState)"' ListView='"(ListView)"' OID='"(Info.OID)"' Function='"(Function)"' ID='"(ID)"' Value='"this.cleanHTML(Value)"' Type='Text' Lookup='"(Info.Lookup)"' oninput='OnInput(event)'"(Style?" Style='"(Style)"'":"")"></Input>"this.BuildExtra(d.Extra,Info.OID)"</TD>"
 				else if(Type="Password")
@@ -251,7 +251,7 @@ Class HTMLGUI{
 		if(Build){
 			Second:=Head:="<Table Name='"(ListView)"'><THead Class='FixedHeader'><TR Class='Header'>"
 			for a,b in this.Columns[ListView]
-				Spans.="<TH><Span Class='Header' ListView='"(ListView)"' Function='SortHDR' OText='"(b.ID)"' ID='"(b.ID)"'>"(b.Name)"</Span></TH>",Second.="<TH>"(b.Name)"</TH>"
+				Spans.="<TH><Span Class='Header' Language='"(b.Language)"' ListView='"(ListView)"' Function='SortHDR' OText='"(b.ID)"' ID='"(b.ID)"'>"(b.Name)"</Span></TH>",Second.="<TH>"(b.Name)"</TH>"
 			Head.="</TR></thead></Table>",Second.="</TR></THead><TBody></TBody>",Header.innerHTML:=Head,Header.querySelector("TR").innerHTML:=Spans,Body.innerHTML:=Second,ComObjError(0)
 			if(!this.SelectedCSS[ListView])
 				this.SelectedCSS[ListView]:=this.createElement("Style")
@@ -349,7 +349,7 @@ Class HTMLGUI{
 			for a,b in Attributes
 				New.setAttribute(a,b)
 		}else if(Type="Checkbox")
-			New:=this.createElement("Input",Parent,{ID:Attributes.ID,Type:"Checkbox"})
+			New:=this.createElement("Input",Parent,{ID:Attributes.ID,Type:"Checkbox",Language:Attributes.Language})
 		else if(Type="TreeView"){
 			New:=this.createElement("Div",Parent),New.ID:=Text,New.setAttribute("Control",Text),New.setAttribute("Tree",Text),this.MainGUI[Text]:=Attributes
 			if(!Style.Border)
@@ -372,7 +372,7 @@ Class HTMLGUI{
 		if(Type="DDL")
 			New.setAttribute("onchange","OnInput(event)")
 		if(Type="Checkbox")
-			Label:=this.createElement("Label",Parent,{Checkbox:Attributes.ID},Style,HTML)
+			Label:=this.createElement("Label",Parent,{Checkbox:Attributes.ID,Language:Attributes.Language},Style,HTML)
 		return MG?MG:New
 	}CurrentNode(){
 		return this.Doc.activeElement
@@ -1051,7 +1051,7 @@ Class HTMLGUI{
 				List.="<Div "(b.Current||A_Index=Current?"Current":"")" OID='"(b.OID)"' X='"(X)"' Y='"(Y)"' Class='Div' Type='MediaGrid' ID='"(this.DivID)"' Style='Border-Radius:"(this.Border)"px;Border:"(this.Border)"px Solid Grey;Float:Left'>"
 				List.="<Video OID='"(b.OID)"' X='"(X)"' Y='"(Y)"' ID='"(this.DivID)"' Type='MediaGrid' Style='Display:None;vertical-align: middle;Max-Width:100%;Max-Height:100%;Background:"(this.VideoBackground)"'></Video>"
 				List.="<Img OID='"(b.OID)"' X='"(X)"' Y='"(Y)"' ID='"(this.DivID)"' Type='MediaGrid' Style='vertical-align: middle;Max-Width:100%;Max-Height:100%'></Img>"
-				List.="<Span Type='MediaGrid' ID='"(this.DivID)"' X='"(X)"' Y='"(Y)"'>"(b.Text)"</Span></Div>"
+				List.="<Span Type='MediaGrid' Language='"(b.Language)"' ID='"(this.DivID)"' X='"(X)"' Y='"(Y)"'>"(b.Text)"</Span></Div>"
 				X++,(X>this.X)?(X:=1,Y++):""
 			}this.querySelector("Div[ID='"(this.DivID)"']").innerHTML:=List
 			for a,b in Media{
