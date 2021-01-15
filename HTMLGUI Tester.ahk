@@ -158,9 +158,9 @@ This(a,b,c){
 	t("Function: " A_ThisFunc,"Label: " A_ThisLabel,"Line: " A_LineNumber,"HERE!",a,b,c,"time:1")
 }
 Tree1(){
-	Tree:=[{OID:1,Language:33,Menu:"Testing",Value:"Neat",Parent:"",ClosedIcon:"&#x21C9;",OpenIcon:"&#x2B87;",IconStyle:"Color:Purple",Style:"Color:Pink",Expand:1}
-		 ,{OID:2,Language:34,Menu:"Testing",Function:"TreeClick1",Value:"<U>S</U><Span Style='Color:Yellow'>t</Span><Span Style='Color:Purple'>u</Span>ff With a lot of text to show </BR> that it will scroll to the right or left depending on what the text is",Parent:1,ClosedIcon:"&#x1F63C;",OpenIcon:"&#x1F63C;",ClosedIconStyle:"Color:Orange",IconStyle:"Color:Purple",Style:{Color:"Pink"}}
-		 ,{OID:3,Language:35,Function:"TreeClick2",Value:"<U>S</U><Span Style='Color:Yellow'>t</Span><Span Style='Color:Purple'>u</Span>ff",Parent:1,ClosedIcon:"&#x1F63C;",OpenIcon:"&#x1F63C;",ClosedIconStyle:"Color:Orange",IconStyle:"Color:Purple",Style:{Color:"Pink"}}
+	Tree:=[{OID:1,Language:33,Menu:"Testing",Value:"Neat",Parent:"",ClosedIcon:"&#x21C9;",OpenIcon:"&#x2B87;",OpenIconStyle:"Color:Purple",ClosedIconStyle:"Color:Pink",Style:"Color:Pink",Expand:1}
+		 ,{OID:2,Language:34,Menu:"Testing",Function:"TreeClick1",Value:"<U>S</U><Span Style='Color:Yellow'>t</Span><Span Style='Color:Purple'>u</Span>ff With a lot of text to show </BR> that it will scroll to the right or left depending on what the text is",Parent:1,ClosedIcon:"&#x1F63C;",OpenIcon:"&#x1F63C;",ClosedStyle:"Color:Orange",IconStyle:"Color:Purple",Style:{Color:"Pink"}}
+		 ,{OID:3,Language:35,Function:"TreeClick2",Value:"<U>S</U><Span Style='Color:Yellow'>t</Span><Span Style='Color:Purple'>u</Span>ff",Parent:1,ClosedIcon:"&#x1F63C;",OpenIcon:"&#x1F63C;",ClosedStyle:"Color:Orange",IconStyle:"Color:Purple",Style:{Color:"Pink"}}
 		 ,{OID:4,Language:36,Value:"Folder",Type:"Folder",Parent:0,Style:"Color:Pink",Language:"Four"}
 		 ,{OID:5,Language:37,Value:"In Folder",Parent:4,Icon:"&#0191;",IconStyle:"Color:Orange",Style:"Color:Pink"}]
 	if(GG.querySelector("#Large").Checked){
@@ -194,5 +194,3 @@ Woot(Files){
 	m("Function: " A_ThisFunc,"Line: " A_LineNumber,"Here!",Files)
 }
 #Include <HTMLGUI>
-#Include <t>
-#Include <Obj2String>

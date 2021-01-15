@@ -846,7 +846,7 @@ Class HTMLGUI{
 			Gui,% this.Win ":Show",x%xOrHWND% y%y% w%w% h%h%,% this.ProgramName
 			Gui,% this.Win ":+MinSize"(W)"x"(H)
 		}
-		this.Size() ;,this.Tab()
+		this.Size(),this.LabelOrder() ;,this.Tab()
 	}Size(Info:="",W:="",H:=""){
 		static WW,HH
 		this:=IsObject(this)?this:(HTMLGUI.Keep[A_Gui]),(W&&H)?(WW:=W,HH:=H):!W||!H?(W:=WW,H:=HH):"",DllCall("SetWindowPos",UPtr,this.Controls.Main.HWND,Int,0,"Int",0,"Int",0,"Int",W,"Int",H,"UInt",0x0020),this.FixColumnHeaders()
@@ -958,7 +958,7 @@ Class HTMLGUI{
 				this.cElement("Style",a).innerText:=b
 			this.SetStates()
 		}Click(Node){
-			this.NoCurrent(),Node:=this.GetDiv(Node),(GetKeyState("Shift")||GetKeyState("Ctrl"))?(Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected")):0,Node.setAttribute("Current"),this.Highlight()
+			this.Playing.Pause(),this.NoCurrent(),Node:=this.GetDiv(Node),(GetKeyState("Shift")||GetKeyState("Ctrl"))?(Node.hasAttribute("Selected")?Node.removeAttribute("Selected"):Node.setAttribute("Selected")):0,Node.setAttribute("Current"),this.Highlight(),(this.HGUI.GetControl(Node).getAttribute("AutoPlay")?((Vid:=Node.querySelector("Video")).SRC?(this.Playing:=Vid,(Vid.Paused?Vid.Play():Vid.Pause())):0):0)
 		}cElement(Type,ID:=""){
 			return New:=this.Doc.createElement(Type),this.Doc.Body.AppendChild(New),(ID?New.ID:=ID:"")
 		}CurrentMedia(){
