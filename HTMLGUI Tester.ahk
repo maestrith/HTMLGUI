@@ -2,19 +2,21 @@
 global GG:=New HTMLGUI(1,"",{Background:"Black",Size:30}),Different:=1
 GG.Reset()
 ;~ GG.SetLanguageObj({Main:{Show:{English:"Show Values",Jibberish:"Flhsoqns"},Save:{English:"Save",Jibberish:"oEioah#"},Language:{English:"Jibberish",Jibberish:"English"},Four:{English:4,Jibberish:"Toast"}}})
-GG.createElement("Input",,{Function:"Input",IgnoreState:1,ID:"My_Search"})
-GG.createElement("DDL",,{Function:"DDL",ID:"MyDDL",Drop:"DDLDrop"},{Background:"Black",Color:"Yellow"},
+Div:=GG.createElement("Div",,,{Width:"100%"})
+GG.AddCSS("TH Span",{"Font-Size":"20"})
+GG.createElement("Input",Div,{Function:"Input",IgnoreState:1,ID:"My_Search"})
+GG.createElement("DDL",Div,{Function:"DDL",ID:"MyDDL",Drop:"DDLDrop"},{Background:"Black",Color:"Yellow"},
 			 ,[{Value:"Apple",OID:1,Language:1}
 			 ,{Value:"&#0191;Peach",OID:2,Style:"Color:Pink",Language:2}
 			 ,{Value:"Pear",OID:3,Language:3}
 			 ,{Value:"Banana",OID:4,Language:4}
 			 ,{Value:"Kitty &#x1F63C;",OID:5,Language:5,Selected:1}]) ;OID is not necessary but if you want it to be something other than 1,2,3,4...etc you can set it, just don't reuse them
-GG.createElement("Button",,{Function:"Show",Language:"Show",Right_Click:"Right"},,,"Show Values")
-GG.createElement("Button",,{Function:"Save",Language:"Save"},,,"Save Edited")
-GG.createElement("Button",,{Function:"Revert",Language:6},,,"Revert")
-GG.createElement("Button",,{Function:"Different",Menu:"Testing",Language:7},,,"Different Tree")
-GG.createElement("Button",,{Function:"Change_Language",Language:"Language"},,,"Change Language")
-GG.createElement("Checkbox",,{ID:"Large",Function:"RefreshTree",Language:8},{"Font-Size":15,Color:"Yellow"},,"Large Tree")
+GG.createElement("Button",Div,{Function:"Show",Language:"Show",Right_Click:"Right"},,,"Show Values")
+GG.createElement("Button",Div,{Function:"Save",Language:"Save"},,,"Save Edited")
+GG.createElement("Button",Div,{Function:"Revert",Language:6},,,"Revert")
+GG.createElement("Button",Div,{Function:"Different",Menu:"Testing",Language:7},,,"Different Tree")
+GG.createElement("Button",Div,{Function:"Change_Language",Language:"Language"},,,"Change Language")
+GG.createElement("Checkbox",Div,{ID:"Large",Function:"RefreshTree",Language:8},{"Font-Size":15,Color:"Yellow"},,"Large Tree")
 Div:=GG.createElement("Div",,,{Width:"100%",Height:"calc(50%)",Display:"Inline-Block"})
 GG.createElement("TreeView",Div,,{Width:300,Height:"100%",Float:"Left"},"MyTree")
 GG.createElement("ListView",Div,{Drop:"MyListDrop"},{Width:"calc(100% - 304px)",Height:"calc(100% + 2px)",Float:"Left"},"MyList")
@@ -32,6 +34,9 @@ GG.BuildBody2([{ID:{Type:"Text",Value:4,OID:1,Language:11},Title:{Type:"Input",L
 		    ,{ID:{Type:"Text",Value:4,OID:2,Language:14},Title:{Type:"Input",Language:15,Value:"Fun",Menu:"Testing",Function:"That",OID:2},Things:{Type:"Text",Language:16,Value:"Other things",Function:"ClickMe",Style:"Cursor:Hand",OID:2}}],"MyList")
 GG.Tab()
 GG.Menus("Testing","<Menu><Item Name='First'><Item Name='Under First' Function='Under'/></Item><Item Name='Testing' Function='Testing'/></Menu>")
+/*
+	<thead class="FixedHeader">
+*/
 GG.Show(,,1400,650)
 GG.SetCurrentLanguage("English")
 GG.SetScreen("Main")

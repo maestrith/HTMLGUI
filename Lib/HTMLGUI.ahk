@@ -109,6 +109,8 @@ Class HTMLGUI{
 		this.m(Clipboard:=RegExReplace(Node?Node.outerHtml:this.Doc.Body.outerHTML,"<","`n<"))
 	}__New(Win:=1,ProgramName:="",Style:="",Options:=""){
 		static
+		#MaxHotkeysPerInterval,1000
+		#HotkeyInterval,1
 		SetWinDelay,-1
 		for a,b in {Background:"Black",Highlight:"#333",SelectedColor:"#999",Color:"Grey",Changed:"Red",HeaderColor:"Orange",Size:15}
 			this[a]:=b
@@ -132,13 +134,10 @@ Class HTMLGUI{
 		DetectHiddenWindows,%Detect%
 		Main.RegisterAsDropTarget:=false
 		DllCall("ole32\RevokeDragDrop","UPtr",hIE)
-		Loop, Parse, Cursors, `,
-		{
-			DllCall( "SetSystemCursor", Uint,CursorHandle, Int,A_Loopfield )
-		} 
 		this.FixIE(),this.Win:=Win,this.FunctionObj:=[]
 		this.WB:=Main,this.LastLV:=[]
 		this.AllMenus:=[]
+		this.ListViewStyles:=[]
 		this.Doc:=Main.Document,this.HWND:=MHWND,this.ID:="ahk_id"MHWND,this.WB:=Main,this.MediaGrid:=[]
 		this.Functions:=[],this.ChangedObj:=[],this.ChangedNode:=[],this.Columns:=[],this.Data:=[],this.ProgramName:=ProgramName,this.Selected:=[],this.SelectedCSS:=[],this.Styles:=[],this.StylesObj:=[],this.Timers:=[],this.Controls:={Main:{HWND:MainHWND,ID:"ahk_id"MainHWND}}
 		HTMLGUI.Keep[Win]:=this
@@ -357,6 +356,9 @@ Class HTMLGUI{
 			SSS.=(a)":"(b)";"
 		if(Type="ListView"){
 			New:=this.createElement("Div",Parent),New.innerHTML:=this.LVHTML(Text),New.setAttribute("Control",Text),this.MainGUI[Text]:=this.createElement("Style"),this.MainGUI[Text].innerText:="#"(Text)" Div.Container1{transform:translate(0px)}",this.Functions[Text]:=Attributes.Function,Attributes.ListView:=Text,Attributes.Type:="ListView",Attributes.Control:="ListView",New.ID:=Text
+			;here
+			this.ListViewStyles[Text]:=(this.createElement("Style"))
+			this.Testing:=this.AddCSS("Testing",{"Margin-Top":"4px"})
 			for a,b in Attributes
 				New.setAttribute(a,b)
 		}else if(Type="Checkbox")
@@ -548,26 +550,22 @@ Class HTMLGUI{
 			Node:=Node.parentNode
 		return Node
 	}FixColumnHeaders(){
-		All:=this.Doc.GetElementsByClassName("Outer")
-		AllObj:=[]
+		All:=this.Doc.GetElementsByClassName("Outer"),AllObj:=[]
 		while(aa:=All.Item[A_Index-1]){
 			All1:=aa.GetElementsByTagName("Div"),AllObj.Push(OO:=[])
 			while(aa1:=All1.Item[A_Index-1])
 				if(InStr(aa1.ID,"Container"))
 					OO[RegExReplace(aa1.ID,"\D")]:=aa1
-		}
-		for a,b in AllObj{
-			Start:=2,All:=b.2.GetElementsByTagName("TH"),Fix:=b.1.GetElementsByTagName("Span")
-			ComObjError(0)
-			while(aa:=All.Item[A_Index-1]){
-				Rect:=aa.GetBoundingClientRect()
-				Width:=Rect.Right-Rect.Left
-				Fix[A_Index-1].Style.Left:=Start
-				Fix[A_Index-1].Style.Width:=Width
-				Start+=Width
-			}
+		}for a,b in AllObj{
+			Start:=2,All:=b.2.GetElementsByTagName("TH"),Fix:=b.1.GetElementsByTagName("Span"),Max:=[],ComObjError(0)
+			while(aa:=All.Item[A_Index-1])
+				Rect:=aa.GetBoundingClientRect(),Width:=Rect.Right-Rect.Left,Fix[A_Index-1].Style.Left:=Start,Fix[A_Index-1].Style.Width:=Width,Start+=Width
 			ComObjError(1)
-		}
+		}All:=this.Doc.querySelectorAll(".FixedHeader Span"),Max:=[]
+		while(aa:=All.Item[A_Index-1])
+			Rect:=aa.GetBoundingClientRect(),Max[aa.getAttribute("ListView"),Round(Rect.Bottom-Rect.Top)]:=1
+		for a,b in Max
+			this.ListViewStyles[a].innerText:=".Inner[ListView='"(a)"']{Margin-Top:"(b.MaxIndex())"px}"
 	}FixIE(Version=0){
 		static Key:="Software\Microsoft\Internet Explorer\MAIN\FeatureControl\FEATURE_BROWSER_EMULATION",Versions:={7:7000,8:8888,9:9999,10:10001,11:11001}
 		Version:=Versions[Version]?Versions[Version]:Version
@@ -637,7 +635,7 @@ Class HTMLGUI{
 	}Hotkeys(Keys:=""){
 		Keys:=IsObject(Keys)?Keys:[]
 		Dir:=this.DirectionsObj
-		for a,b in {Delete:this.Delete.Bind(this),"+Delete":this.Del.Bind(this),Tab:this.Tab.Bind(this),"+Tab":this.TabShift.Bind(this),Left:Dir,Right:Dir,Up:Dir,Down:Dir}
+		for a,b in {Delete:this.Delete.Bind(this),"+Delete":this.Del.Bind(this),Tab:this.Tab.Bind(this),"+Tab":this.TabShift.Bind(this),Left:Dir,Right:Dir,Up:Dir,Down:Dir,"^WheelUp":"DeadEnd","^WheelDown":"DeadEnd"}
 			Keys[a]:=b
 		Hotkey,IfWinActive,% this.ID
 		for a,b in this.HotkeyList{
@@ -707,7 +705,7 @@ Class HTMLGUI{
 		if(!Items)
 			return Node:=this.Doc.querySelector("Div[ListView='"(ListView)"'] TBody"),Parent:=Node.parentNode,Parent.RemoveChild(Node),this.createElement("TBody",Parent)
 	}LVHTML(ListView,Width:="calc(100% - 2px)",Height:="calc(100% - 2px)",Function:=""){
-		Total.="<Div Class='Outer' ID='" ListView "' ListView='"(ListView)"' Style='Width:"(Width)";Height:"(Height)"'><Div ID='Container1' Class='Container1'></Div><Div Class='Inner' onscroll='scroll(event)' ID='Inner' Ident='Inner' Style='Width:100%'><Div ID='Container2' Class='Container2' Style='Margin-Left:2px;Margin-Right:2px;Margin-Top:0px' onscroll='scroll(event)'></Div></Div></Div>"
+		Total.="<Div Class='Outer' ID='" ListView "' ListView='"(ListView)"' Style='Width:"(Width)";Height:"(Height)"'><Div ID='Container1' Class='Container1'></Div><Div Class='Inner' onscroll='scroll(event)' ID='Inner' Ident='Inner' ListView='"(ListView)"' Style='Width:100%'><Div ID='Container2' Class='Container2' Style='Margin-Left:2px;Margin-Right:2px;Margin-Top:0px' onscroll='scroll(event)'></Div></Div></Div>"
 		return Total
 	}m(x*){
 		static List:={Btn:{OC:1,ARI:2,YNC:3,YN:4,RC:5,CTC:6},Ico:{"x":16,"?":32,"!":48,"i":64}},Msg:=[],Title
@@ -783,12 +781,13 @@ Class HTMLGUI{
 		while(this.WB.ReadyState!=4)
 			Sleep,10
 		Font:="Color:"(this.HeaderColor)";Font-Size:" this.Size "px;Background:"(this.Background)
-		this.Doc.Body.outerHTML:="<Body Style='Width:calc(100% - 4);Margin:0px;' ondrop='return false;'>",this.Doc.Body.innerHTML:=HTML
+		this.Doc.Body.outerHTML:="<Head></Head><Body Style='Width:calc(100% - 4);Margin:0px;' ondrop='return false;'>",this.Doc.Body.innerHTML:=HTML
 		for a,b in ["Body{"(Font)"}",".Container1 TH{Visibility:Hidden}",".Outer{Border:1px Solid Grey;OverFlow:Hidden;Display:Block}","TH Span{White-Space:NoWrap;Visibility:Visible;Position:Absolute;Text-Align:Center;"(Font)"}"
-				 ,".Inner{OverFlow:Auto;Width:100%;Height:calc(100% - "(this.Size)"px);Margin-Top:"(this.Size+5)"px}",".Container2 TD{White-Space:NoWrap}",".Container2 TH{White-Space:NoWrap;Visibility:Hidden;Line-Height:0px;"(Font)"}"
+				 ,".Inner{OverFlow:Auto;Width:100%;Height:calc(100% - "(this.Size)"px)}",".Container2 TD{White-Space:NoWrap}",".Container2 TH{White-Space:NoWrap;Visibility:Hidden;Line-Height:0px;"(Font)"}"
 				 ,"UL,LI{list-style-type:None}","Div[Type='TreeView']:focus LI[Sel='1']>Span[ID='Label']{Background:"(this.TreeViewSelectColor)";Border:0px}","Div[Type='TreeView'] LI[Sel='1']>Span[ID='Label']{Background:'';Border:1px Solid "(this.TreeViewUnFocusedBorderColor)"}"
 				 ,"LI[Expand='1'][Type='Folder']>UL,LI{Display:Block}","LI[Expand='']>Span[ID='Icon'].Open{Display:None}","LI[Expand='1']>Span[ID='Icon'].Closed{Display:None}","LI[Expand='']>UL{Display:None;Visibility:Hidden}"
-				 ,"td{Border:1px Solid Grey;Padding:8px}","Body{Background-Color:"(this.Background)";Color:"(this.Color)";-MS-User-Select:None}","Table{Border-Collapse:Collapse;Border-Spacing:0;Width:100%}","Input:Focus{Background:#444;Color:#FFF;Border:2px Solid Orange}","Input{Background:"(this.Background)";Color:"(this.Color)"}",".Title{Color:"(this.TitleColor)"}"
+				 ,"td{Border:1px Solid Grey;Padding:8px}","Body{Background-Color:"(this.Background)";Color:"(this.Color)";-MS-User-Select:None;-MS-Content-Zooming:none;-ms-touch-action: none}","Table{Border-Collapse:Collapse;Border-Spacing:0;Width:100%}","Input:Focus{Background:#444;Color:#FFF;Border:2px Solid Orange}","Input{Background:"(this.Background)";Color:"(this.Color)"}",".Title{Color:"(this.TitleColor)"}"
+				 ,"HTML{-ms-touch-action: none}"
 				 ,"Div[Type='RCM'] LI,UL{Margin:0px}"
 				 ,"Div[Type='RCM'] LI:Hover>UL{Display:Block}"
 				 ,"Div[Type='RCM'] LI{Display:Block;Float:Left;Clear:Left}"
