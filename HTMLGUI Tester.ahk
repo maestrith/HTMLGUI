@@ -29,7 +29,7 @@ Loop,Files,Images\*.*
 MG.Populate(Images)
 MG.SelectHotkeys({"!a":"Select_All"})
 Different()
-GG.BuildLV("MyList",[{ID:"ID",Name:"ID Name",Menu:"Testing",Language:"Header1"},{ID:"Title",Name:"The Title",Language:"Header2"},{ID:"Things",Name:"More Things",Language:"Header3"}])
+GG.BuildLV("MyList",[{ID:"ID",Name:"ID Name",Style:"Color:Red;Font-Size:15",Menu:"Testing",Language:"Header1"},{ID:"Title",Name:"The Title",Style:"Color:Green",Language:"Header2"},{ID:"Things",Name:"More Things",Style:"Color:Blue",Language:"Header3"}])
 GG.BuildBody2([{ID:{Type:"Text",Value:4,OID:1,Language:11},Title:{Type:"Input",Language:12,Style:"Width:90%;Color:Pink",Value:"Neat",Drop:"Woot",IgnoreState:1,Function:"This",OID:1},Things:{Type:"Checkbox",Language:13,Checked:1,Value:"LOL",OID:1}}
 		    ,{ID:{Type:"Text",Value:4,OID:2,Language:14},Title:{Type:"Input",Language:15,Value:"Fun",Menu:"Testing",Function:"That",OID:2},Things:{Type:"Text",Language:16,Value:"Other things",Function:"ClickMe",Style:"Cursor:Hand",OID:2}}],"MyList")
 GG.Tab()

@@ -261,7 +261,7 @@ Class HTMLGUI{
 		if(Build){
 			Second:=Head:="<Table Name='"(ListView)"'><THead Class='FixedHeader'><TR Class='Header'>"
 			for a,b in this.Columns[ListView]
-				Spans.="<TH><Span Menu='"(b.Menu)"' Class='Header' Language='"(b.Language)"' ListView='"(ListView)"' Function='"(b.Function?b.Function:"SortHDR")"' OText='"(b.ID)"' ID='"(b.ID)"'>"(b.Name)"</Span></TH>",Second.="<TH>"(b.Name)"</TH>"
+				Spans.="<TH><Span Menu='"(b.Menu)"' Style="(b.Style)" Class='Header' Language='"(b.Language)"' ListView='"(ListView)"' Function='"(b.Function?b.Function:"SortHDR")"' OText='"(b.ID)"' ID='"(b.ID)"'>"(b.Name)"</Span></TH>",Second.="<TH>"(b.Name)"</TH>"
 			Head.="</TR></thead></Table>",Second.="</TR></THead><TBody></TBody>",Header.innerHTML:=Head,Header.querySelector("TR").innerHTML:=Spans,Body.innerHTML:=Second,ComObjError(0)
 			if(!this.SelectedCSS[ListView])
 				this.SelectedCSS[ListView]:=this.createElement("Style")
